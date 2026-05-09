@@ -23,11 +23,6 @@ interface Camera {
   }
 }
 
-interface Linedef {
-  start: Vertex;
-  end: Vertex;
-}
-
 interface Seg extends Linedef {
   id?: number;
   color?: string;
@@ -42,9 +37,12 @@ interface Sector {
   height?: number; // stage 5b only
   floorHeight?: number;
   floorColor?: string;
+  floorTexture?: string;
   ceilHeight?: number;
   ceilColor?: string;
+  ceilTexture?: string;
   wallColor?: string;
+  wallTexture?: string;
   segs: Seg[]
 }
 

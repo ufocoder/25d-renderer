@@ -6,8 +6,6 @@ import type { BSPLeaf, BSPNode } from "./bsp/typings";
 import { calculatePolygonCenter, sortPointsClockwise, uniquePoints } from "./bsp/geometry";
 
 const RAY_LENGTH = 500;
-const SCALE_DEFAULT = 1;
-
 
 const colors: string[] = [
   '#FF9500',
@@ -71,54 +69,48 @@ function drawLeaf(
 
 }
 
-export function create2dRender(options: { scale?: number } = {}) {
-  const { scale = SCALE_DEFAULT } = options;
-  let bspTree: BSPNode | null = null;
-  
-  return function render2d(ctx: CanvasRenderingContext2D, settings: Settings) {
-    const camera = settings.camera;
-    const allSegments = settings.level.linedefs;
+let bspTree: BSPNode | null = null;
 
-    const onSplitDebug = (data: any) => {
-      
-      ctx.clearRect(0,0,1000,1000);
+export default function render2d(ctx: CanvasRenderingContext2D, settings: Settings, scale: number = 1, offsetX: number, offsetY: number) {
+  const camera = settings.camera;
+  const allSegments = settings.level.linedefs;
 
-      for (const linedef of data.frontSegs) {
-        drawLinedef(ctx, scaleLinedef(linedef, scale), 'red', 5);
-      }
-
-      for (const linedef of data.backSegs) {
-        drawLinedef(ctx, scaleLinedef(linedef, scale), 'blue', 5);
-      }
-    }
-
-     if (!bspTree) {
-      bspTree = buildBSPTree(allSegments, 10, 3, onSplitDebug);
-    }
-
-
-    let order = 0;
-    traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
-      drawLeaf(ctx, bspNode, scale, ++order);
-    });
-
-    const halfFov = camera.fov.degrees / 2;
-    const angle = camera.angle.degrees;
-
-    drawAngleLine(ctx, camera.x * scale, camera.y * scale, new Angle(angle - halfFov), RAY_LENGTH);
-    drawAngleLine(ctx, camera.x * scale, camera.y * scale, new Angle(angle), RAY_LENGTH);
-    drawAngleLine(ctx, camera.x * scale, camera.y * scale, new Angle(angle + halfFov), RAY_LENGTH);
+  const onSplitDebug = (data: any) => {
     
-    ctx.fillStyle = "#00ff88";
-    ctx.beginPath();
-    ctx.strokeStyle = "#00ff88";
-    ctx.lineWidth = 2;
-    const lookX = camera.x * scale + Math.cos(camera.angle.radians) * 20;
-    const lookY = camera.y * scale + Math.sin(camera.angle.radians) * 20;
-    ctx.moveTo(camera.x * scale, camera.y * scale);
-    ctx.lineTo(lookX, lookY);
-    ctx.stroke();
-  };
-}
+    ctx.clearRect(0,0,1000,1000); 
 
-export default create2dRender();
+    for (const linedef of data.frontSegs) {
+      drawLinedef(ctx, scaleLinedef(linedef, scale), 'red', 5);
+    }
+
+    for (const linedef of data.backSegs) {
+      drawLinedef(ctx, scaleLinedef(linedef, scale), 'blue', 5);
+    }
+  }
+
+  if (!bspTree) {
+    bspTree = buildBSPTree(allSegments, 10, 3, onSplitDebug);
+  }
+
+  let order = 0;
+  traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
+    drawLeaf(ctx, bspNode, scale, ++order);
+  });
+
+  const halfFov = camera.fov.degrees / 2;
+  const angle = camera.angle.degrees;
+
+  drawAngleLine(ctx, camera.x * scale, camera.y * scale, new Angle(angle - halfFov), RAY_LENGTH);
+  drawAngleLine(ctx, camera.x * scale, camera.y * scale, new Angle(angle), RAY_LENGTH);
+  drawAngleLine(ctx, camera.x * scale, camera.y * scale, new Angle(angle + halfFov), RAY_LENGTH);
+  
+  ctx.fillStyle = "#00ff88";
+  ctx.beginPath();
+  ctx.strokeStyle = "#00ff88";
+  ctx.lineWidth = 2;
+  const lookX = camera.x * scale + Math.cos(camera.angle.radians) * 20;
+  const lookY = camera.y * scale + Math.sin(camera.angle.radians) * 20;
+  ctx.moveTo(camera.x * scale, camera.y * scale);
+  ctx.lineTo(lookX, lookY);
+  ctx.stroke();
+};

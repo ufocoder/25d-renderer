@@ -1,7 +1,7 @@
 import { Angle } from "@app/lib/Angle";
 
 const camera: Camera = {
-  x: 125,  
+  x: 325,  
   y: 175,
   z: 2_000,
   height: 2_000,

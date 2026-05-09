@@ -2,13 +2,13 @@ import { createSignal } from 'solid-js';
 import type { Component } from 'solid-js';
 import { useCameraControls } from '@app/hooks/useCameraControls';
 import Canvas from "@app/components/Canvas";
-import render2d from '@app/stages/Stage1a/render2d';
 import { createRender25d } from './render25d';
 import defaultSettings from './settings';
-import KeyboardControls from '@app/components/Controls';
 import Content from '@app/components/Сontent';
 import { PROJECT_REPO_URL } from '@app/config/repo';
 import { Formula } from '@app/components/Formula';
+import Map2d from '@app/components/Map2d';
+import render2d from '@app/stages/Stage0/render2d';
 
 
 const Stage: Component = () => {
@@ -44,11 +44,8 @@ const Stage: Component = () => {
 
         <div class="flex flex-col gap-2">
           <h2 class="text-2xl">2D Renderer</h2>
-          <KeyboardControls />
           <div class="inline-block">
-            <Canvas
-              width={400}
-              height={320}
+            <Map2d
               settings={settings}
               render={render2d}
             />

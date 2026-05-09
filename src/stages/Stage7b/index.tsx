@@ -4,7 +4,7 @@ import { useCameraControlsV3 } from './hooks/useCameraControls';
 import Canvas from "@app/components/Canvas";
 import { createRender25d } from '../Stage7a/render25d';
 import defaultSettings from './settings';
-import KeyboardControls from '@app/components/Controls';
+import KeyboardControls from '@app/components/Map2d/Controls';
 import { useBspTree } from '@app/hooks/useBspTree';
 import { create2dRenderMap } from '../Stage7a/render2dmap';
 import { create2dRenderBsp } from '../Stage7a/render2dbsp';

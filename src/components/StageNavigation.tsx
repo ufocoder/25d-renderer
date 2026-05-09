@@ -54,7 +54,6 @@ export const StageNavigation: Component = () => {
   return (
     <div class="mt-8 pt-6 border-t border-[#d8deea]">
       <div class="flex items-center justify-between gap-4">
-        {/* Кнопка Назад - прижата влево */}
         {prevLink() ? (
           <A
             href={prevLink()!.href}
@@ -76,7 +75,7 @@ export const StageNavigation: Component = () => {
             </svg>
             <div class="flex flex-col items-start">
               <span class="text-xs text-gray-500">
-                {prevLink()!.groupTitle || 'Предыдущий'}
+                {prevLink()!.groupTitle}
               </span>
               <span class="text-sm font-medium">{prevLink()!.label}</span>
             </div>
@@ -92,7 +91,7 @@ export const StageNavigation: Component = () => {
           >
             <div class="flex flex-col items-end">
               <span class="text-xs text-gray-500">
-                {nextLink()!.groupTitle || 'Следующий'}
+                {nextLink()!.groupTitle}
               </span>
               <span class="text-sm font-medium">{nextLink()!.label}</span>
             </div>

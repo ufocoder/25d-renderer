@@ -1,16 +1,15 @@
 import { createSignal } from 'solid-js';
 import type { Component } from 'solid-js';
-import Canvas from "@app/components/Canvas";
 import { useCameraControlsV3 } from '../Stage7b/hooks/useCameraControls';
+import Canvas from "@app/components/Canvas";
 import { createRender25d } from './render25d';
 import defaultSettings from './settings';
-import KeyboardControls from '@app/components/Controls';
+import KeyboardControls from '@app/components/Map2d/Controls';
 import { useBspTree } from '@app/hooks/useBspTree';
 import { create2dRenderMap } from '../Stage7a/render2dmap';
 import { create2dRenderBsp } from '../Stage7a/render2dbsp';
 
-
-const Stage5: Component = () => {
+const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
   const bspTree = useBspTree({ settings });
 
@@ -56,4 +55,4 @@ const Stage5: Component = () => {
   );
 };
 
-export default Stage5;
+export default Stage;

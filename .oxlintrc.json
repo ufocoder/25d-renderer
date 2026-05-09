@@ -4,5 +4,8 @@
     "browser": true,
     "es2023": true
   },
+  "plugins": [
+    "import"
+  ],
   "ignorePatterns": ["dist"]
 }

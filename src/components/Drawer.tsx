@@ -45,8 +45,6 @@ export const DrawerContent: Component<{ onLinkClick?: () => void }> = (props) =>
 };
 
 export const Drawer: Component<{ isOpen: boolean; onClose: () => void }> = (props) => {
-  let drawerRef: HTMLDivElement | undefined;
-
   createEffect(() => {
     if (props.isOpen) {
       document.body.style.overflow = 'hidden';
@@ -84,15 +82,13 @@ export const Drawer: Component<{ isOpen: boolean; onClose: () => void }> = (prop
         onClick={props.onClose}
       />
       
-      {/* Drawer панель */}
       <aside
-        ref={drawerRef}
         class={`absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] transform bg-[#eef2fb] shadow-2xl transition-transform duration-300 ease-out ${
           props.isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div class="flex items-center justify-between border-b border-[#d8deea] px-4 py-4">
-          <span class="text-lg font-bold text-[#1f2a44]">Naive 2.5 Render</span>
+          <span class="text-lg font-bold text-[#1f2a44]">2.5D Renderer</span>
           <button
             aria-label="Закрыть меню"
             class="rounded p-1.5 text-[#1f2a44] transition-colors hover:bg-[#d8deea]"

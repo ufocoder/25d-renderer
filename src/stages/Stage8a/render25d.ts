@@ -1,8 +1,9 @@
 import { traverseBSPTree } from "../Stage6a/bsp/traverse";
 import type { BSPLeaf, BSPNode } from "../Stage6a/bsp/typings";
-import { projectSegX, projectSegY, type ProjectionScreenX  } from "../Stage7a/projection";
+import { projectSegX, projectSegY, type ProjectionScreenX } from "./projection";
 import { getPointSide } from "../Stage6a/bsp/geometry";
-
+import { textures, type Texture } from "./textures";
+import { Angle } from "@app/lib/Angle";
 
 function isPortal(seg: Seg): boolean {
   return Boolean(seg.isTwoSide && seg.backSector && seg.backSector !== seg.frontSector);
@@ -81,6 +82,65 @@ function drawVerticalLine(
   ctx.fillRect(x, topY, 1, bottomY - topY);
 }
 
+function getTextureOffsetX(
+  seg: Seg,
+  camera: Camera,
+  screenX: number,
+  texture: Texture
+): number {
+  const fov = camera.fov.degrees;
+  const centerX = camera.screen.width / 2;
+  const angleOffset = ((screenX - centerX) / camera.screen.width) * fov;
+  const rayAngle = new Angle(camera.angle.degrees + angleOffset);
+  
+  const rayDir = { x: rayAngle.cos, y: rayAngle.sin };
+  
+  const dx = seg.end.x - seg.start.x;
+  const dy = seg.end.y - seg.start.y;
+  
+  const denominator = dx * rayDir.y - dy * rayDir.x;
+  if (Math.abs(denominator) < 0.001) return 0;
+  
+  const t = ((camera.x - seg.start.x) * rayDir.y - (camera.y - seg.start.y) * rayDir.x) / denominator;
+  
+  const wallX = seg.start.x + dx * t;
+  const wallY = seg.start.y + dy * t;
+  
+  let textureX = Math.floor(Math.abs(wallX + wallY) * texture.scale) % texture.width;
+  if (textureX < 0) textureX += texture.width;
+  
+  return textureX;
+}
+
+function drawTexturedVerticalLine(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  topY: number,
+  bottomY: number,
+  texture: Texture,
+  textureX: number,
+  textureStartY: number
+): void {
+  if (topY >= bottomY) return;
+  
+  const wallHeight = bottomY - topY;
+  const yIncrementer = wallHeight / texture.height;
+  
+  for (let i = topY; i < bottomY; i++) {
+    let y = topY + i * yIncrementer;
+
+    let textureY = Math.floor(Math.abs(textureStartY + i)) % texture.height;
+    if (textureY < 0) textureY += texture.height;
+    
+    const colorIndex = texture.bitmap[textureY][textureX];
+    const color = texture.colors[colorIndex];
+    
+    ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+    ctx.fillRect(x, Math.floor(y), 1, Math.ceil(yIncrementer));
+  }
+}
+
+
 function createSolidWallRanges(camera: Camera) {
   const ranges: SolidSegmentRange[] = [];
 
@@ -108,6 +168,7 @@ function drawSolidSegment(
   const wallColor = sector.wallColor!;
   const floorColor = sector.floorColor!;
   const ceilColor = sector.ceilColor!;
+  const wallTexture = sector.wallTexture ? textures[sector.wallTexture] : null;
 
   const projectionY = projectSegY(camera, projectionX, sector, seg);
 
@@ -142,7 +203,16 @@ function drawSolidSegment(
       drawVerticalLine(ctx, x, Math.floor(upperClip[x].top), drawTop, ceilColor);
     }
 
-    drawVerticalLine(ctx, x, drawTop, drawBottom, wallColor);
+    if (wallTexture) {
+      const textureOffsetX = getTextureOffsetX(seg, camera, x, wallTexture);
+      const textureOffsetY = 0;
+      drawTexturedVerticalLine(
+        ctx, x, drawTop, drawBottom, 
+        wallTexture, textureOffsetX, textureOffsetY
+      );
+    } else {
+      drawVerticalLine(ctx, x, drawTop, drawBottom, wallColor);
+    }
 
     if (drawBottom < lowerClip[x].bottom) {
       drawVerticalLine(ctx, x, drawBottom, Math.ceil(lowerClip[x].bottom), floorColor);
@@ -193,6 +263,8 @@ function drawPortalSegment(
   const currentSector = isFront ? frontSector : backSector;
   const otherSector = isFront ? backSector : frontSector;
 
+  const wallTexture = otherSector.wallTexture ? textures[otherSector.wallTexture] : null;
+
   const frontProjectionY = projectSegY(camera, projectionX, frontSector, seg);
   const backProjectionY = projectSegY(camera, projectionX, backSector, seg);
   const portalWallType = getPortalWallType(currentSector, otherSector);
@@ -242,7 +314,16 @@ function drawPortalSegment(
       const wallTop = drawTop;
       const wallBottom = Math.min(drawBottom, Math.max(drawTop, otherTop));
       if (wallTop < wallBottom) {
-        drawVerticalLine(ctx, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
+        if (wallTexture) {
+          const textureOffsetX = getTextureOffsetX(seg, camera, x, wallTexture);
+          const textureOffsetY = 0;
+          drawTexturedVerticalLine(
+            ctx, x, wallTop, wallBottom, 
+            wallTexture, textureOffsetX, textureOffsetY
+          );
+        } else {
+          drawVerticalLine(ctx, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
+        }
         upperClip[x].top = wallBottom;
       }
     }
@@ -251,7 +332,16 @@ function drawPortalSegment(
       const wallTop = Math.max(drawTop, Math.min(drawBottom, otherBottom));
       const wallBottom = drawBottom;
       if (wallTop < wallBottom) {
-        drawVerticalLine(ctx, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
+        if (wallTexture) {
+          const textureOffsetX = getTextureOffsetX(seg, camera, x, wallTexture);
+          const textureOffsetY = 0;
+          drawTexturedVerticalLine(
+            ctx, x, wallTop, wallBottom, 
+            wallTexture, textureOffsetX, textureOffsetY
+          );
+        } else {
+          drawVerticalLine(ctx, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
+        }
         lowerClip[x].bottom = wallTop;
       }
     }
@@ -306,4 +396,3 @@ export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
     });
   }
 }
-

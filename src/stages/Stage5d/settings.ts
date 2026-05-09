@@ -15,7 +15,7 @@ const camera: Camera = {
   rotationSpeed: 2,
 };
 
-const room: Sector = {
+const room1: Sector = {
   floorHeight: 0,
   floorColor: "#8B6914",
   ceilHeight: 2_000,
@@ -23,9 +23,17 @@ const room: Sector = {
   segs: createRectangleLines(120, 70, 150, 80)
 };
 
+const room2: Sector = {
+  floorHeight: 0,
+  floorColor: "#8B6914",
+  ceilHeight: 2_000,
+  ceilColor: "#87CEEB",
+  segs: createRectangleLines(270, 70, 150, 80)
+};
+
 const level: Level = {
-  linedefs: room.segs,
-  sectors: [room]
+  linedefs: [...room1.segs, ...room2.segs],
+  sectors: [room1, room2]
 };
 
 const settings: Settings = {

@@ -1,4 +1,4 @@
-interface KeyboardControlsProps {
+export interface KeyboardControlsProps {
   withVertical?: boolean;
 }
 
@@ -27,7 +27,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
 
   return (
     <p class="font-normal text-gray-500 my-2 select-none">
-      <span>Camera horizontal controls </span>
+      <span>Перемещение камеры </span>
       <kbd 
         class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
         onMouseDown={() => handleMouseDown('w')}
@@ -62,7 +62,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
       </kbd>{" "}
       {withVertical && (
         <>
-          <span> and vertical </span>
+          <span> и </span>
           <kbd 
             class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
             onMouseDown={() => handleMouseDown('z')}
@@ -78,7 +78,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
             onContextMenu={(e) => e.preventDefault()}
           >
             X
-          </kbd>{" "}
+          </kbd>
         </>
       )}
     </p>

@@ -9,7 +9,7 @@ interface CodeBlockProps {
 }
 
 const CodeHighlight = (props: CodeBlockProps) => {
-  let ref!: HTMLDivElement;
+  let container: HTMLDivElement | null = null;
 
   const [html] = createResource(async () => {
     return await codeToHtml(props.code, {
@@ -19,16 +19,16 @@ const CodeHighlight = (props: CodeBlockProps) => {
   });
 
   onCleanup(() => {
-    if (ref) ref.innerHTML = '';
+    if (container) container.innerHTML = '';
   });
 
   createEffect(() => {
-    if (html() && ref) {
-      ref.innerHTML = html()!;
+    if (html() && container) {
+      container.innerHTML = html()!;
     }
   });
 
-  return <div ref={ref} class={props.class} />;
+  return <div ref={ref => { container = ref; }} class={props.class} />;
 };
 
 export default function CodeBlock(props: CodeBlockProps) {

@@ -1,8 +1,9 @@
 import { createSignal } from 'solid-js';
 import type { Component } from 'solid-js';
 import Canvas from "@app/components/Canvas";
-import { create2dRender as create2dRenderStage1 } from '../Stage1a/render2d';
-import { create2dRender as create2dRenderStage6 } from './render2d';
+import render2dStage0 from '@app/stages/Stage0/render2d';
+import { JsonViewer } from '@app/components/JsonViewer';
+import render2dStage6 from './render2d';
 import settings1 from './settings/single.sector.column';
 import settings2 from './settings/single.sector.pyramid';
 import settings3 from './settings/sectors.column';
@@ -10,7 +11,6 @@ import settings4 from './settings/sectors.pyramid';
 import settings5 from './settings/sectors.corridor';
 import settings6 from './settings/single.sector.stairs.a';
 import settings7 from './settings/single.sector.stairs.b';
-import { JsonViewer } from '@app/components/JsonViewer';
 import { buildBSPTree } from './bsp/build';
 
 const settingsSet = [
@@ -37,12 +37,13 @@ const Row: Component<RowProps> = ({ settings: defaultSettings, scale = 0.4 }) =>
           width={400}
           height={320}
           settings={settings}
-          render={create2dRenderStage1({ scale })} />
+          render={render2dStage0} />
         <Canvas
+          scale={scale}
           width={400}
           height={320}
           settings={settings}
-          render={create2dRenderStage6({ scale })} />
+          render={render2dStage6} />
         <JsonViewer data={buildBSPTree(settings().level.linedefs)} />
       </div>
   );

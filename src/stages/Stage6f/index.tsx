@@ -2,11 +2,11 @@ import { createSignal } from 'solid-js';
 import type { Component } from 'solid-js';
 import { useCameraControls } from '@app/hooks/useCameraControls';
 import Canvas from "@app/components/Canvas";
-import { create2dRender as create2dRenderStage1 } from '../Stage1a/render2d';
-import { create2dRender as create2dRenderStage6 } from '../Stage6a/render2d';
+import render2dStage0 from '@app/stages/Stage0/render2d';
+import render2dStage6 from '@app/stages/Stage6a/render2d';
 import render25d from './render25d';
 import defaultSettings from './settings';
-import KeyboardControls from '@app/components/Controls';
+import Map2d from '@app/components/Map2d';
 
 const Stage5: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
@@ -36,17 +36,16 @@ const Stage5: Component = () => {
             />
         </div>
         <div>
-          <Canvas
+          <Map2d
             width={400}
             height={320}
             settings={settings}
-            render={create2dRenderStage1({ scale: 0.5 })} />
-          <KeyboardControls withVertical />
-          <Canvas
+            render={render2dStage0} />
+          <Map2d
             width={400}
             height={320}
             settings={settings}
-            render={create2dRenderStage6({ scale: 0.5 })} />
+            render={render2dStage6} />
         </div>
       </div>
     </section>

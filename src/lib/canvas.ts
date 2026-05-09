@@ -1,25 +1,25 @@
 import type { Angle } from "./Angle";
 
 export function drawPolygon(ctx: CanvasRenderingContext2D, points: Vertex[], fillColor = '#3498db', strokeColor = '#2980b9') {
-    ctx.beginPath();
-    
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'black';
+  ctx.beginPath();
+  
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'black';
 
-    ctx.moveTo(points[0].x, points[0].y);
+  ctx.moveTo(points[0].x, points[0].y);
 
-    for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
-    }
+  for (let i = 1; i < points.length; i++) {
+    ctx.lineTo(points[i].x, points[i].y);
+  }
 
-    ctx.closePath();
+  ctx.closePath();
 
-    ctx.fillStyle = fillColor;
-    ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = 1;
-    
-    ctx.fill();
-    ctx.stroke();
+  ctx.fillStyle = fillColor;
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = 1;
+  
+  ctx.fill();
+  ctx.stroke();
 }
 
 export function drawLinedef(ctx: CanvasRenderingContext2D, linedef: Linedef, color = 'black', lineSize = 1) {
@@ -30,6 +30,19 @@ export function drawLinedef(ctx: CanvasRenderingContext2D, linedef: Linedef, col
   ctx.lineWidth = lineSize;
   ctx.strokeStyle = color;
   ctx.stroke();
+}
+
+export function drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, color = 'black') {
+  ctx.beginPath(); 
+  ctx.fillStyle = color;
+  ctx.arc(
+    x, 
+    y, 
+    radius,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
 }
 
 export function drawAngleLine(ctx: CanvasRenderingContext2D, x: number, y: number, angle: Angle, len: number) {

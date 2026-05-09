@@ -28,7 +28,13 @@ export function isPathActive(pathname: string, href: string) {
 }
 
 export const menuGroups: MenuEntry[] = [
-  { href: '/welcome', label: 'Приветствие' },
+  { href: '/', label: 'Предисловие' },
+  { 
+    title: 'Stage 0: Введение',
+    links: [
+      { href: '/stage-0', label: 'Двумерная карта' },
+    ]
+  },
   {
     title: 'Stage 1: Одиночная стена',
     links: [
@@ -82,4 +88,19 @@ export const menuGroups: MenuEntry[] = [
       { href: '/stage-6f', label: 'Разные высоты секторов' },
     ],
   },
+  {
+    title: 'Stage 7: движение',
+    links: [
+      { href: '/stage-7a', label: 'перемещение по лестницам' },
+      { href: '/stage-7b', label: 'коллизиции со стенами' },
+    ],
+  },
+  {
+    title: 'Stage 8: текстурирование',
+    links: [
+      { href: '/stage-8a', label: 'стены' },
+      { href: '/stage-8b', label: 'пол и потолок' },
+      { href: '/stage-8c', label: 'уровень освещения' },
+    ],
+  }
 ];
