@@ -1,33 +1,46 @@
 import { Angle } from "@app/lib/Angle";
-import { createCircleLines } from "@app/lib/level";
 
 const camera: Camera = {
-  x: 1800,
-  y: 700,
+  x: 100,  
+  y: 150,
+  z: 2_000,
+  height: 2_000,
   fov: new Angle(45),
-  angle: new Angle(115),
+  angle: new Angle(0),
   screen: {
     width: 400,
     height: 320,
   },
-  moveSpeed: 1,
-  rotationSpeed: 1,
+  moveSpeed: 3,
+  rotationSpeed: 2,
 };
 
-const sector1 = {
-  height: 40_000,
-  segs: createCircleLines(1500, 1300, 840, 8)
+const roomSector: Sector = {
+  id: 0,
+  floorHeight: 0,
+  floorColor: "#777",
+  ceilHeight: 30_000,
+  ceilColor: "#999",
+  wallColor: "#333",
+  wallTexture: 'wall',
+  segs: []
 };
 
-const sector2 = {
-  height: 40_000,
-  segs: createCircleLines(1500, 1300, 75, 10)
-}
+const createRect = (x: number, y: number, xs: number, ys: number, isTwoSide: boolean, isSolid: boolean, frontSector: Sector, backSector?: Sector): Seg[] => ([
+  { start: { x, y }, end: { x: x + xs, y }, isTwoSide, isSolid, frontSector, backSector },
+  { start: { x: x + xs, y }, end: { x: x + xs, y: y + ys }, isTwoSide, isSolid, frontSector, backSector },
+  { start: { x: x + xs, y: y + ys }, end: { x: x, y: y + ys }, isTwoSide, isSolid, frontSector, backSector },
+  { start: { x: x, y: y + ys }, end: { x, y }, isTwoSide, isSolid, frontSector, backSector },
+]);
+
+const segs = createRect(50, 50, 200, 200, false, true, roomSector)
 
 const level: Level = {
-  linedefs: [...sector2.segs, ...sector1.segs],
-  sectors: [sector1, sector2]
-}
+  linedefs: [
+    ...segs,
+  ],
+  sectors: []
+};
 
 const settings: Settings = {
   camera,

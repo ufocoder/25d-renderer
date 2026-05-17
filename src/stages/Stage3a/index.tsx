@@ -1,62 +1,55 @@
-import { createSignal } from 'solid-js';
+import Canvas from "@app/Canvas/CanvasBase";
+import { JsonViewer } from '@app/components/JsonViewer';
+import render2dStage0 from '@app/stages/Stage0a/render2d';
 import type { Component } from 'solid-js';
-import { useCameraControls } from '@app/hooks/useCameraControls';
-import Canvas from "@app/components/Canvas";
-import render2d from '@app/stages/Stage0/render2d';
-import Map2d from '@app/components/Map2d';
-import render25d from './render25d';
-import defaultSettings from './settings';
-import { createRender25d } from '../Stage2/render25d';
+import { createSignal } from 'solid-js';
+import { simplifyBSP } from './bsp/debug';
+import { useBspTree } from "./hooks/useBspTree";
+import render2dStage6 from './renderBSP';
+import defaultSettings from './settings/sectors.column';
 
-const Stage3: Component = () => {
-  const [settings, setSettings] = createSignal<Settings>(defaultSettings);
-
-  useCameraControls<Settings>({ settings, setSettings });
+const Stage: Component = () => {
+  const [settings] = createSignal<Settings>(defaultSettings);
+  const bspTree = useBspTree({ settings});
 
   return (
     <section class="flex flex-col gap-4">
+      
+      <p>TODO</p>
 
-      <div class="grid grid-cols-2 gap-4">
-        <div class="mt-4 flex flex-col">
-          <h2 class="text-2xl">2.5D Renderer</h2>
+
+      <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
+        <div class="flex flex-col gap-2">
+          <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
+          <div class="flex justify-center">
+            <Canvas
+              width={400}
+              height={400}
+              settings={settings}
+              render={render2dStage0} />
+          </div>
         </div>
-        <div class="mb-2 mt-4">
-          <h2 class="text-2xl">2D Renderer</h2>
+        <div class="flex flex-col gap-2">
+          <h2 class="flex justify-center text-2xl">2D Renderer</h2>
+          <div class="flex justify-center">
+             <Canvas
+              width={400}
+              height={400}
+              settings={settings}
+              render={render2dStage6} />
+          </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
-        <div class="grid gap-4">
+     <h2 class="text-2xl">Содержимое дерева</h2>
 
+      <p>Получившиеся BSP-дерево в виде JSON</p>
 
-          <h4 class="text">Stage 2 renderer: Skip intersection</h4>
-          <Canvas
-            settings={settings}
-            width={settings().camera.screen.width}
-            height={settings().camera.screen.height}
-            render={createRender25d({ withFix: true })}
-          />
-          <h4 class="text">Clipping renderer: 
-            Polar clipping + linear interpolation
-            </h4>
-          <Canvas
-            settings={settings}
-            width={settings().camera.screen.width}
-            height={settings().camera.screen.height}
-            render={render25d}
-          />
-        </div>
-        
-        <div>
-          <Map2d
-            width={400}
-            height={320}
-            settings={settings}
-            render={render2d} />
-        </div>
+      <div class="flex flex-col">
+        <JsonViewer data={simplifyBSP(bspTree())} />
       </div>
     </section>
   );
 };
 
-export default Stage3;
+export default Stage;

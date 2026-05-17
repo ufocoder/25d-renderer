@@ -1,6 +1,6 @@
-import { createSignal, onCleanup, type Accessor, type Setter } from "solid-js";
-import createLoop from "@app/lib/loop";
 import { Angle } from "@app/lib/Angle";
+import createLoop from "@app/lib/loop";
+import { createSignal, onCleanup, type Accessor, type Setter } from "solid-js";
 
 interface UseCameraControlsProps<T> {
   settings: Accessor<T>;
@@ -83,16 +83,12 @@ export function useCameraControls<T extends { camera: Camera }>({
         break;
 
       case "KeyW":
-      case "ArrowUp":
       case "KeyS":
-      case "ArrowDown":
         setMoving(0);
         break;
 
       case "KeyA":
-      case "ArrowLeft":
       case "KeyD":
-      case "ArrowRight":
         setRotating(0);
         break;
     }
@@ -114,20 +110,16 @@ export function useCameraControls<T extends { camera: Camera }>({
         }
         return;
       case "KeyW":
-      case "ArrowUp":
         setMoving(1);
         return;
       case "KeyS":
-      case "ArrowDown":
         setMoving(-1);
         break;
 
       case "KeyA":
-      case "ArrowLeft":
         setRotating(-1);
         break;
       case "KeyD":
-      case "ArrowRight":
         setRotating(1);
         break;
     }

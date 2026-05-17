@@ -1,6 +1,6 @@
-import { createEffect, onCleanup } from 'solid-js';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import { createEffect, onCleanup } from 'solid-js';
 
 interface FormulaProps {
   latex: string;
@@ -10,7 +10,7 @@ interface FormulaProps {
 }
 
 export const Formula = (props: FormulaProps) => {
-  let containerRef: HTMLDivElement | null = null;
+  let containerRef: HTMLElement | null = null;
 
   const renderFormula = () => {
     if (!containerRef) return;
@@ -38,6 +38,10 @@ export const Formula = (props: FormulaProps) => {
       containerRef.innerHTML = '';
     }
   });
+
+  if (props.inline) {
+    return <span ref={ref => { containerRef = ref; }} class={props.class} />;  
+  }
 
   return <div ref={ref => { containerRef = ref; }} class={props.class} />;
 };

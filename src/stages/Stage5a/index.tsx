@@ -1,17 +1,19 @@
-import { createSignal } from 'solid-js';
+import Canvas from "@app/Canvas/CanvasBase";
+import KeyboardControls from '@app/components/Map2d/Controls';
+import { useBspTree } from '@app/stages/Stage3a/hooks/useBspTree';
+import { create2dRenderBsp } from '@app/stages/Stage4a/render2dbsp';
+import { create2dRenderMap } from '@app/stages/Stage4a/render2dmap';
+import { useCameraControlsV3 } from '@app/stages/Stage4b/hooks/useCameraControls';
 import type { Component } from 'solid-js';
-import { useCameraControls } from '@app/hooks/useCameraControls';
-import Canvas from "@app/components/Canvas";
-import Map2d from '@app/components/Map2d';
-import render2d from '@app/stages/Stage0/render2d';
+import { createSignal } from 'solid-js';
+import { createRender25d } from './render25d';
 import defaultSettings from './settings';
-import render25dStage4 from '../Stage4a/render25d';
-import render25d from './render25d';
 
-const Stage5: Component = () => {
+const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
+  const bspTree = useBspTree({ settings });
 
-  useCameraControls<Settings>({ settings, setSettings });
+  useCameraControlsV3({ settings, setSettings, bspTree: bspTree() });
 
   return (
     <section class="flex flex-col gap-4">
@@ -27,31 +29,30 @@ const Stage5: Component = () => {
 
       <div class="grid grid-cols-2 gap-4">
         <div class="grid gap-4">
-          <h4 class="text">Level based on linedefs</h4>
-           <Canvas
-            settings={settings}
-            width={settings().camera.screen.width}
-            height={settings().camera.screen.height}
-            render={render25dStage4}
-          />
-          <h4 class="text">Level based on sectors</h4>
-           <Canvas
-            settings={settings}
-            width={settings().camera.screen.width}
-            height={settings().camera.screen.height}
-            render={render25d}
-          />
+          <h4 class="text">BSP</h4>
+            <Canvas
+              settings={settings}
+              width={settings().camera.screen.width}
+              height={settings().camera.screen.height}
+              render={createRender25d({ bspTree: bspTree() })}
+            />
         </div>
         <div>
-          <Map2d
+          <Canvas
             width={400}
             height={320}
             settings={settings}
-            render={render2d} />
+            render={create2dRenderMap({ scale: 0.5 })} />
+          <KeyboardControls withVertical />
+          <Canvas
+            width={400}
+            height={320}
+            settings={settings}
+            render={create2dRenderBsp({ bspTree: bspTree(), scale: 0.5 })} />
         </div>
       </div>
     </section>
   );
 };
 
-export default Stage5;
+export default Stage;

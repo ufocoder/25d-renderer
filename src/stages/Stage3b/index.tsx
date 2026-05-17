@@ -1,21 +1,52 @@
-import { createSignal } from 'solid-js';
+import Canvas from "@app/Canvas/CanvasBase";
+import render2dStage0 from '@app/stages/Stage0a/render2d';
+
+import settings5 from '@app/stages/Stage3a/settings/sectors.corridor';
+import settings4 from '@app/stages/Stage3a/settings/sectors.pyramid';
+import settings2 from '@app/stages/Stage3a/settings/single.sector.pyramid';
+import settings6 from '@app/stages/Stage3a/settings/single.sector.stairs.a';
+import settings7 from '@app/stages/Stage3a/settings/single.sector.stairs.b';
 import type { Component } from 'solid-js';
-import { useCameraControls } from '@app/hooks/useCameraControls';
-import Canvas from "@app/components/Canvas";
-import render2d from '@app/stages/Stage0/render2d';
-import Map2d from '@app/components/Map2d';
-import render25dStage3a from '../Stage3a/render25d';
-import render25dStage3b from './render25d';
-import defaultSettings from './settings';
+import { createSignal } from 'solid-js';
+import { useBspTree } from "../Stage3a/hooks/useBspTree";
+import createRender2dStage6 from './renderBSP';
 
-const Stage3: Component = () => {
-  const [settings, setSettings] = createSignal<Settings>(defaultSettings);
+const settingsSet = [
+  settings2,
+  settings4,
+  settings5,
+  settings6,
+  settings7,
+]
 
-  useCameraControls<Settings>({ settings, setSettings });
+interface RowProps {
+  settings: Settings,
+  scale?: number;
+}
+
+const Row: Component<RowProps> = ({ settings: defaultSettings }) => {
+  const [settings] = createSignal<Settings>(defaultSettings);
+  const bspTree = useBspTree({ settings })
 
   return (
-    <section class="flex flex-col gap-4">
+      <div class="grid grid-cols-2 gap-4">
+        <Canvas
+          width={400}
+          height={400}
+          settings={settings}
+          render={render2dStage0} />
+        <Canvas
+          width={400}
+          height={400}
+          settings={settings}
+          render={createRender2dStage6(bspTree())} />
+      </div>
+  );
+};
 
+const Stage: Component = () => {
+  return (
+    <section class="flex flex-col gap-4">
       <div class="grid grid-cols-2 gap-4">
         <div class="mt-4 flex flex-col">
           <h2 class="text-2xl">2.5D Renderer</h2>
@@ -24,34 +55,11 @@ const Stage3: Component = () => {
           <h2 class="text-2xl">2D Renderer</h2>
         </div>
       </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div class="grid gap-4">
-          <h4 class="text">Clipping renderer: Polar clipping + linear interpolation</h4>
-          <Canvas
-            settings={settings}
-            width={settings().camera.screen.width}
-            height={settings().camera.screen.height}
-            render={render25dStage3a}
-          />
-          <h4 class="text">distance to normal - scale factor</h4>
-          <Canvas
-            settings={settings}
-            width={settings().camera.screen.width}
-            height={settings().camera.screen.height}
-            render={render25dStage3b}
-          />
-        </div>
-        <div>
-          <Map2d
-            width={400}
-            height={320}
-            settings={settings}
-            render={render2d} />
-        </div>
-      </div>
+      {settingsSet.map(settings => (
+        <Row settings={settings} />
+      ))}
     </section>
   );
 };
 
-export default Stage3;
+export default Stage;

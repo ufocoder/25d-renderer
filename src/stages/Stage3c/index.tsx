@@ -1,14 +1,13 @@
-import { createSignal } from 'solid-js';
-import type { Component } from 'solid-js';
+import Canvas from "@app/Canvas/CanvasBase";
 import { useCameraControls } from '@app/hooks/useCameraControls';
-import Canvas from "@app/components/Canvas";
-import render2d from '@app/stages/Stage0/render2d';
-import Map2d from '@app/components/Map2d';
-import render25d from '../Stage3b/render25d';
-import defaultSettings from './settings';
-import { createRender25d } from '../Stage2/render25d';
+import render2dStage0 from '@app/stages/Stage0a/render2d';
+import render2dStage6 from '@app/stages/Stage3a/renderBSP';
+import defaultSettings from '@app/stages/Stage3a/settings/sectors.column';
+import type { Component } from 'solid-js';
+import { createSignal } from 'solid-js';
+import render25d from './render25d';
 
-const Stage3: Component = () => {
+const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
 
   useCameraControls<Settings>({ settings, setSettings });
@@ -27,33 +26,30 @@ const Stage3: Component = () => {
 
       <div class="grid grid-cols-2 gap-4">
         <div class="grid gap-4">
-
-
-          <h4 class="text">Stage 2 renderer</h4>
-          <Canvas
-            settings={settings}
-            width={settings().camera.screen.width}
-            height={settings().camera.screen.height}
-            render={createRender25d({ withFix: true })}
-          />
-          <h4 class="text">Clipping renderer</h4>
-          <Canvas
-            settings={settings}
-            width={settings().camera.screen.width}
-            height={settings().camera.screen.height}
-            render={render25d}
-          />
+          <h4 class="text">BSP</h4>
+            <Canvas
+              settings={settings}
+              width={settings().camera.screen.width}
+              height={settings().camera.screen.height}
+              render={render25d}
+            />
         </div>
         <div>
-          <Map2d
+          <Canvas
             width={400}
             height={320}
             settings={settings}
-            render={render2d} />
+            render={render2dStage0} />
+
+          <Canvas
+            width={400}
+            height={320}
+            settings={settings}
+            render={render2dStage6} />
         </div>
       </div>
     </section>
   );
 };
 
-export default Stage3;
+export default Stage;

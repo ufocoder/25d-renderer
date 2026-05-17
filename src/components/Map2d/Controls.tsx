@@ -27,7 +27,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
 
   return (
     <p class="font-normal text-gray-500 my-2 select-none">
-      <span>Перемещение камеры </span>
+      <span>Управление камерой </span>
       <kbd 
         class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
         onMouseDown={() => handleMouseDown('w')}

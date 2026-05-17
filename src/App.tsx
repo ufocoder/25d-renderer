@@ -1,52 +1,19 @@
-import { Route, HashRouter, useLocation } from '@solidjs/router';
+import { StageNavigation } from '@app/components/Layout/StageNavigation';
+import { TitleNavigation } from '@app/components/Layout/TitleNavigation';
+import { HashRouter, Route } from '@solidjs/router';
 import type { Component, ParentComponent } from 'solid-js';
-import { createSignal, createEffect, createMemo } from 'solid-js';
-import { routes } from './routes';
+import { createEffect, createSignal } from 'solid-js';
 import { Drawer } from './components/Drawer';
-import { StageNavigation } from './components/StageNavigation';
-import { menuGroups, isMenuGroup } from './config/menu';
+import { routes } from './routes';
 import Welcome from './stages/Welcome';
 
 
 const Layout: ParentComponent = (props) => {
-  const location = useLocation();
   const [drawerOpen, setDrawerOpen] = createSignal(false);
 
   createEffect(() => {
     setDrawerOpen(false);
   });
-
-  const getCurrentLevel = createMemo(() => {
-    const currentPath = location.pathname;
-
-    for (const group of menuGroups) {
-      console.log
-      if (isMenuGroup(group)) {
-        const foundLink = group.links.find(link => link.href === currentPath);
-        if (foundLink) {
-          return {
-            title: group.title,
-            label: foundLink.label,
-            isLink: true
-          };
-        }
-      } else {
-        if (group.href === currentPath) {
-          return {
-            title: group.label,
-            label: null,
-            isLink: false
-          };
-        }
-      }
-    }
-    
-    return null;
-  });
-
-  const currentLevel = getCurrentLevel();
-
-  console.log('currentLevel', currentLevel)
 
   return (
     <>
@@ -67,21 +34,7 @@ const Layout: ParentComponent = (props) => {
           <div class="lg:hidden h-14" />
           <div class="min-h-[calc(100vh-3rem)] flex flex-col">
             <div class="flex-1">
-              <h1 class="text-xl2 font-semibold text-[#1f2a44]">2.5D Render</h1>
-
-              {currentLevel && (
-                <div class="mb-6 pb-3 border-b border-[#d8deea]">
-                  {currentLevel.isLink ? (
-                    <>
-                      <p class="text-sm text-[#6b7a8f] mb-1">{currentLevel.title}</p>
-                      <h2 class="text-xl font-semibold text-[#1f2a44]">{currentLevel.label}</h2>
-                    </>
-                  ) : (
-                    <h2 class="text-xl font-semibold text-[#1f2a44]">{currentLevel.title}</h2>
-                  )}
-                </div>
-              )}
-
+              <TitleNavigation />
               {props.children}
             </div>
             <StageNavigation />
