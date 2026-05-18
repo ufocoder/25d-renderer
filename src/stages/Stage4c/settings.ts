@@ -15,7 +15,7 @@ const camera: Camera = {
   rotationSpeed: 2,
 };
 
-const stepHeight = 500;
+const stepHeight = 750;
 
 const roomSector: Sector = {
   id: 0,

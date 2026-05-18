@@ -114,6 +114,7 @@ const Stage: Component = () => {
       <Map2d
         withZoom
         withDebug
+        withControls
         width={settings().camera.screen.width} 
         height={settings().camera.screen.height} 
         settings={settings}

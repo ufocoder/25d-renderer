@@ -1,13 +1,11 @@
-
 import { Angle } from "@app/lib/Angle";
 import { drawAngleLine, drawPolygon } from "@app/lib/canvas";
+import { buildBSPTree } from "@app/stages/Stage3b/bsp/build";
 import { calculatePolygonCenter, sortPointsClockwise, uniquePoints } from "@app/stages/Stage3b/bsp/geometry";
 import { traverseBSPTree } from "@app/stages/Stage3b/bsp/traverse";
 import type { BSPLeaf, BSPNode } from "@app/stages/Stage3b/bsp/typings";
 
 const RAY_LENGTH = 500;
-const SCALE_DEFAULT = 1;
-
 
 const colors: string[] = [
   '#FF9500',
@@ -68,16 +66,20 @@ function drawLeaf(
   ctx.font = "17px Arial";
   ctx.fillText(String(index), center.x, center.y);
   ctx.restore();
+
 }
 
-export function create2dRenderBsp(options: { bspTree: BSPNode, scale?: number }) {
-  const { bspTree, scale = SCALE_DEFAULT } = options;
-  
-  return function render2d(ctx: CanvasRenderingContext2D, settings: Settings) {
+export default function createRender2dStage3b(bspTree: BSPNode) {
+  return function render2d(ctx: CanvasRenderingContext2D, settings: Settings, scale = 1) {
+    
     const camera = settings.camera;
+    const allSegments = settings.level.linedefs;
+
+    if (!bspTree) {
+      bspTree = buildBSPTree(allSegments, 10, 3);
+    }
 
     let order = 0;
-
     traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
       drawLeaf(ctx, bspNode, scale, ++order);
     });
@@ -99,4 +101,4 @@ export function create2dRenderBsp(options: { bspTree: BSPNode, scale?: number })
     ctx.lineTo(lookX, lookY);
     ctx.stroke();
   };
-}
+};

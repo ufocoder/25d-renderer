@@ -3,7 +3,6 @@ import { drawCircle, drawLinedef } from "@app/lib/canvas";
 
 const VERTEX_DOT_SIZE = 2;
 const CAMERA_DOT_SIZE = 5;
-const GRID_SIZE = 50; 
 
 function worldToScreen(
   worldX: number,
@@ -81,49 +80,6 @@ function getIntersectionWithCanvasEdges(
     y: closest.y
   };
 }
-
-function drawGrid(
-  ctx: CanvasRenderingContext2D, 
-  offsetX: number, 
-  offsetY: number, 
-  scale: number,
-  width: number,
-  height: number
-) {
-  const scaledGridSize = GRID_SIZE * scale;
-
-  const startX = -offsetX;
-  const startY = -offsetY;
-  
-  const firstX = Math.ceil(startX / scaledGridSize) * scaledGridSize;
-  const firstY = Math.ceil(startY / scaledGridSize) * scaledGridSize;
-  
-  ctx.save();
-  ctx.strokeStyle = '#cccccc';
-  ctx.lineWidth = 1;
-  
-  for (let x = firstX; x < width + startX; x += scaledGridSize) {
-    const screenX = x + offsetX;
-    if (screenX >= 0 && screenX <= width) {
-      ctx.beginPath();
-      ctx.moveTo(screenX, 0);
-      ctx.lineTo(screenX, height);
-      ctx.stroke();
-    }
-  }
-  
-  for (let y = firstY; y < height + startY; y += scaledGridSize) {
-    const screenY = y + offsetY;
-    if (screenY >= 0 && screenY <= height) {
-      ctx.beginPath();
-      ctx.moveTo(0, screenY);
-      ctx.lineTo(width, screenY);
-      ctx.stroke();
-    }
-  }
-  
-  ctx.restore();
-};
 
 function drawLine(ctx: CanvasRenderingContext2D, fromX: number, fromY: number, toX: number, toY: number) {
   ctx.beginPath();

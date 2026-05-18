@@ -39,6 +39,7 @@ const Stage: Component = () => {
           <h2 class="flex justify-center text-2xl">2D Renderer</h2>
           <div class="flex justify-center">
             <Map2d
+              withControls
               settings={settings}
               render={render2d}
             />
@@ -57,7 +58,7 @@ const Stage: Component = () => {
         Пусть на расстоянии 1 высота стены будет равна константе <Label>H wall</Label>, тогда на расстоянии <Label>d</Label>, высота:
       </p>
       <Content class="my-2">
-        <Formula latex="h = \frac{H_{\text{wall}}}{d_{\text{proj}}}" />
+        <Formula latex="h = \frac{H_{\text{wall}}}{d}" />
       </Content>
       <p class="py-2">
         На основе проекции <Label>screenX</Label> на экран и найденной высоте стены <Label>h</Label> формируем координаты четырехугольника. 

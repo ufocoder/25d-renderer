@@ -1,11 +1,10 @@
 import Canvas from "@app/Canvas/CanvasBase";
-import KeyboardControls from '@app/components/Map2d/Controls';
+import Map2d from "@app/components/Map2d";
 import { useBspTree } from '@app/stages/Stage3a/hooks/useBspTree';
-import { create2dRenderBsp } from '@app/stages/Stage4a/render2dbsp';
-import { create2dRenderMap } from '@app/stages/Stage4a/render2dmap';
-import { useCameraControlsV3 } from '@app/stages/Stage4b/hooks/useCameraControls';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
+import render2d from "../Stage0a/render2d";
+import { useCameraControlsV3 } from "../Stage4b/hooks/useCameraControls";
 import { createRender25d } from './render25d';
 import defaultSettings from './settings';
 
@@ -18,39 +17,33 @@ const Stage: Component = () => {
   return (
     <section class="flex flex-col gap-4">
 
-      <div class="grid grid-cols-2 gap-4">
-        <div class="mt-4 flex flex-col">
-          <h2 class="text-2xl">2.5D Renderer</h2>
-        </div>
-        <div class="mb-2 mt-4">
-          <h2 class="text-2xl">2D Renderer</h2>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div class="grid gap-4">
-          <h4 class="text">BSP</h4>
+      <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
+        <div class="flex flex-col gap-2">
+          <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
+          <div class="flex justify-center">
             <Canvas
               settings={settings}
               width={settings().camera.screen.width}
               height={settings().camera.screen.height}
               render={createRender25d({ bspTree: bspTree() })}
             />
+          </div>
         </div>
-        <div>
-          <Canvas
-            width={400}
-            height={320}
-            settings={settings}
-            render={create2dRenderMap({ scale: 0.5 })} />
-          <KeyboardControls withVertical />
-          <Canvas
-            width={400}
-            height={320}
-            settings={settings}
-            render={create2dRenderBsp({ bspTree: bspTree(), scale: 0.5 })} />
+        <div class="flex flex-col gap-2">
+          <h2 class="flex justify-center text-2xl">2D Renderer</h2>
+          <div class="flex justify-center">
+            <Map2d
+              withControls
+              initialZoom={0.75}
+              initialOffsetX={20}
+              initialOffsetY={50}
+              settings={settings}
+              render={render2d}
+            />
+          </div>
         </div>
       </div>
+
     </section>
   );
 };

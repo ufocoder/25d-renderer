@@ -1,4 +1,4 @@
-import type { BSPNode } from "@app/stages/Stage3a/bsp/typings";
+import type { BSPNode } from "@app/stages/Stage3b/bsp/typings";
 
 export type SimplifiedBSPNode = 
   | {

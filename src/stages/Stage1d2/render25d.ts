@@ -51,8 +51,7 @@ function caclulateScaleFactor(
 
   const wallDir = toAngle(linedef.end, linedef.start);
   const wallNormal = new Angle(wallDir.degrees + 90);
-  
-  
+
   const viewAngle = camera.angle.degrees + screenXAngle.degrees;
   const skewAngle = new Angle(viewAngle - wallNormal.degrees);
   const skewAngleCos = Math.abs(skewAngle.cos);

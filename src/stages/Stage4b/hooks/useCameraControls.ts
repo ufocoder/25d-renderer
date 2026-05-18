@@ -1,7 +1,7 @@
 import { Angle } from "@app/lib/Angle";
 import createLoop from "@app/lib/loop";
-import { findCameraSector } from "@app/stages/Stage3a/bsp/traverse";
-import type { BSPNode } from "@app/stages/Stage3a/bsp/typings";
+import { findCameraSector } from "@app/stages/Stage3b/bsp/traverse";
+import type { BSPNode } from "@app/stages/Stage3b/bsp/typings";
 import { createSignal, onCleanup, type Accessor, type Setter } from "solid-js";
 import { checkCollisionOptimized, DEFAULT_CONFIG } from "../collision";
 

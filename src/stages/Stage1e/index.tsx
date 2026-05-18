@@ -9,7 +9,7 @@ import render25dStage1d2 from '../Stage1d2/render25d';
 import render25d from './render25d';
 import defaultSettings from './settings';
 
-const Stage4: Component = () => {
+const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
 
   useCameraControls<Settings>({ settings, setSettings });
@@ -60,6 +60,7 @@ const Stage4: Component = () => {
           <h2 class="flex justify-center text-2xl">2D Renderer</h2>
           <div class="flex justify-center">
             <Map2d
+              withControls
               settings={settings}
               render={render2d}
             />
@@ -76,4 +77,4 @@ const Stage4: Component = () => {
   );
 };
 
-export default Stage4;
+export default Stage;

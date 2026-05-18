@@ -39,9 +39,5 @@ export const Formula = (props: FormulaProps) => {
     }
   });
 
-  if (props.inline) {
-    return <span ref={ref => { containerRef = ref; }} class={props.class} />;  
-  }
-
   return <div ref={ref => { containerRef = ref; }} class={props.class} />;
 };

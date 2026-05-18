@@ -1,4 +1,5 @@
 import { drawPolygon } from "@app/lib/canvas";
+import wait from "@app/lib/wait";
 import type { SegProjection } from "../Stage2d/projection";
 import { projectionToPoints, projectSeg, toDistance } from "../Stage2d/projection";
 
@@ -128,7 +129,7 @@ function createCeilPolygon(
   };
 }
 
-function renderSectorWithPortal(
+async function renderSectorWithPortal(
   ctx: CanvasRenderingContext2D,
   camera: Camera,
   sector: Sector,
@@ -236,18 +237,22 @@ function renderSectorWithPortal(
   ceilPolygons.sort((a, b) => b.distance - a.distance);
   
   for (const poly of ceilPolygons) {
+    await wait(1_000);
     drawPolygon(ctx, poly.points, poly.color);
   }
   
   for (const wall of walls) {
     const points = projectionToPoints(wall.projection);
+    await wait(1_000);
     drawPolygon(ctx, points, wall.color);
   }
   
   for (const poly of floorPolygons) {
+    await wait(1_000);
     drawPolygon(ctx, poly.points, poly.color);
   }
 
+  await wait(1_000);
   portals.sort((a, b) => b.projection.distance - a.projection.distance);
   
   for (const portal of portals) {
@@ -281,7 +286,7 @@ function findCameraSector(settings: Settings): Sector {
   return settings.level.sectors![0];
 }
 
-export default function render25d(
+export default async function render25d(
   ctx: CanvasRenderingContext2D,
   settings: Settings,
 ) {
@@ -289,5 +294,5 @@ export default function render25d(
 
   const currentSector = findCameraSector(settings);
 
-  renderSectorWithPortal(ctx, camera, currentSector, new Set(), null);
+  await renderSectorWithPortal(ctx, camera, currentSector, new Set(), null);
 }

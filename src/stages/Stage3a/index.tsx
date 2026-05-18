@@ -1,16 +1,15 @@
 import Canvas from "@app/Canvas/CanvasBase";
-import { JsonViewer } from '@app/components/JsonViewer';
+import { useCameraControls } from "@app/hooks/useCameraControls";
 import render2dStage0 from '@app/stages/Stage0a/render2d';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
-import { simplifyBSP } from './bsp/debug';
-import { useBspTree } from "./hooks/useBspTree";
-import render2dStage6 from './renderBSP';
-import defaultSettings from './settings/sectors.column';
+import render2dStage2j from '../Stage2j/render25d';
+import defaultSettings from './settings';
 
 const Stage: Component = () => {
-  const [settings] = createSignal<Settings>(defaultSettings);
-  const bspTree = useBspTree({ settings});
+  const [settings, setSettings] = createSignal<Settings>(defaultSettings);
+
+  useCameraControls<Settings>({ settings, setSettings });
 
   return (
     <section class="flex flex-col gap-4">
@@ -36,18 +35,15 @@ const Stage: Component = () => {
               width={400}
               height={400}
               settings={settings}
-              render={render2dStage6} />
+              render={render2dStage2j} />
           </div>
         </div>
       </div>
 
-     <h2 class="text-2xl">Содержимое дерева</h2>
+     <h2 class="text-2xl">Заголовок</h2>
 
-      <p>Получившиеся BSP-дерево в виде JSON</p>
-
-      <div class="flex flex-col">
-        <JsonViewer data={simplifyBSP(bspTree())} />
-      </div>
+      <p>TODO</p>
+     
     </section>
   );
 };

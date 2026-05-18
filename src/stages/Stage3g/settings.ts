@@ -1,11 +1,11 @@
 import { Angle } from "@app/lib/Angle";
 
 const camera: Camera = {
-  x: 10,  
-  y: 200,
-  z: 2_000,
+  x: 200,
+  y: 380,
+  z: 16,
   fov: new Angle(45),
-  angle: new Angle(0),
+  angle: new Angle(-90),
   screen: {
     width: 400,
     height: 320,
@@ -14,48 +14,95 @@ const camera: Camera = {
   rotationSpeed: 2,
 };
 
-const roomSector: Sector = {
+const groundSector: Sector = {
   id: 1,
   floorHeight: 0,
-  floorColor: "#777",
+  floorColor: "#444",
   ceilHeight: 10_000,
-  ceilColor: "#999",
-  wallColor: "#333",
+  ceilColor: "#87CEEB",
+  wallColor: "#666",
   segs: []
 };
 
-const columnSector: Sector = {
+const step1Sector: Sector = {
   id: 2,
-  floorHeight: 2_000,
-  floorColor: "green",
-  ceilHeight: 8_000,
-  ceilColor: "blue",
-  wallColor: "red",
+  floorHeight: 0,
+  floorColor: "#8B6914",
+  ceilHeight: 2_000,
+  ceilColor: "#87CEEB",
+  wallColor: "#A0522D",
   segs: []
 };
 
-const roomSegs: Seg[] = [
-  { start: { x: 0, y: 0 }, end: { x: 400, y: 0 }, isTwoSide: false, frontSector: roomSector },
-  { start: { x: 400, y: 0 }, end: { x: 400, y: 400 }, isTwoSide: false, frontSector: roomSector },
-  { start: { x: 400, y: 400 }, end: { x: 0, y: 400 }, isTwoSide: false, frontSector: roomSector },
-  { start: { x: 0, y: 400 }, end: { x: 0, y: 0 }, isTwoSide: false, frontSector: roomSector },
+const step2Sector: Sector = {
+  id: 3,
+  floorHeight: 2_000,
+  floorColor: "#020100",
+  ceilHeight: 10_000,
+  ceilColor: "#87CEEB",
+  wallColor: "#A0522D",
+  segs: []
+};
+
+const step3Sector: Sector = {
+  id: 4,
+  floorHeight: 3_000,
+  floorColor: "#8B6914",
+  ceilHeight: 10_000,
+  ceilColor: "#87CEEB",
+  wallColor: "#A0522D",
+  segs: []
+};
+
+
+const step1Size = 120;
+const step2Size = 80;
+const step3Size = 40;
+
+const centerX = 200;
+const centerY = 200;
+
+
+function createTwoSideSegments(x: number, y: number, size: number, frontSector: Sector, backSector: Sector): Seg[] {
+  const half = size / 2;
+  const left = x - half;
+  const right = x + half;
+  const top = y - half;
+  const bottom = y + half;
+  
+  return [
+    { start: { x: left, y: top }, end: { x: right, y: top }, frontSector, backSector, isTwoSide: true },
+    { start: { x: right, y: top }, end: { x: right, y: bottom }, frontSector, backSector, isTwoSide: true },
+    { start: { x: right, y: bottom }, end: { x: left, y: bottom }, frontSector, backSector, isTwoSide: true },
+    { start: { x: left, y: bottom }, end: { x: left, y: top }, frontSector, backSector, isTwoSide: true }
+  ];
+}
+
+
+const step3Walls = createTwoSideSegments(centerX, centerY, step3Size, step3Sector, step2Sector);
+const step2Walls = createTwoSideSegments(centerX, centerY, step2Size, step2Sector, step1Sector);
+const step1Walls = createTwoSideSegments(centerX, centerY, step1Size, step1Sector, groundSector);
+
+
+const roomWalls = [
+  { start: { x: 0, y: 0 }, end: { x: 400, y: 0 }, frontSector: groundSector, backSector: undefined, isTwoSide: false },
+  { start: { x: 400, y: 0 }, end: { x: 400, y: 400 }, frontSector: groundSector, backSector: undefined, isTwoSide: false },
+  { start: { x: 400, y: 400 }, end: { x: 0, y: 400 }, frontSector: groundSector, backSector: undefined, isTwoSide: false },
+  { start: { x: 0, y: 400 }, end: { x: 0, y: 0 }, frontSector: groundSector, backSector: undefined, isTwoSide: false }
 ];
 
-const columnSegs: Seg[] = [
-  { start: { x: 150, y: 150 }, end: { x: 250, y: 150 }, isTwoSide: true, frontSector: columnSector, backSector: roomSector },
-  { start: { x: 250, y: 150 }, end: { x: 250, y: 250 }, isTwoSide: true, frontSector: columnSector, backSector: roomSector },
-  { start: { x: 250, y: 250 }, end: { x: 150, y: 250 }, isTwoSide: true, frontSector: columnSector, backSector: roomSector },
-  { start: { x: 150, y: 250 }, end: { x: 150, y: 150 }, isTwoSide: true, frontSector: columnSector, backSector: roomSector },
-];
 
-roomSector.segs = [...roomSegs, ...columnSegs];
-columnSector.segs = columnSegs;
+groundSector.segs = [...roomWalls, ...step1Walls];
+step1Sector.segs = [...step1Walls];
+step2Sector.segs = [...step2Walls, ...step3Walls];
+step3Sector.segs = step3Walls;
 
-const sectors = [roomSector, columnSector];
+const allSegments = [...roomWalls, ...step1Walls];//, ...step2Walls];//, ...step3Walls];
+const allSectors = [groundSector, step1Sector];//, step2Sector]//, step3Sector];
 
 const level: Level = {
-  linedefs: sectors.map(r => r.segs).flat(),
-  sectors
+  linedefs: allSegments,
+  sectors: allSectors
 };
 
 const settings: Settings = {

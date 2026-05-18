@@ -1,8 +1,8 @@
-import { getPointSide } from "@app/stages/Stage3a//bsp/geometry";
-import { traverseBSPTree } from "@app/stages/Stage3a//bsp/traverse";
-import type { BSPLeaf, BSPNode } from "@app/stages/Stage3a//bsp/typings";
-import { calculateIntersectionAngles, projectSegX, projectSegY, type IntersectionAngles } from "./projection";
-import { textures, type Texture } from "./textures";
+import { getPointSide } from "@app/stages/Stage3b/bsp/geometry";
+import { traverseBSPTree } from "@app/stages/Stage3b/bsp/traverse";
+import type { BSPLeaf, BSPNode } from "@app/stages/Stage3b/bsp/typings";
+import { calculateIntersectionAngles, projectSegX, projectSegY, toAngle, toDistance, type IntersectionAngles } from "./projection";
+import { getTextureColor, textures, type Texture } from "./textures";
 
 function isPortal(seg: Seg): boolean {
   return Boolean(seg.isTwoSide && seg.backSector && seg.backSector !== seg.frontSector);
@@ -81,13 +81,33 @@ function drawVerticalLine(
   ctx.fillRect(x, topY, 1, bottomY - topY);
 }
 
-function getTextureOffsetX(
-  seg: Seg,
-  camera: Camera,
-  screenX: number,
-  texture: Texture
-): number {
+function getTextureOffsetX(seg: Seg, camera: Camera, screenX: number, texture: Texture): number {
+  // Получаем углы для интерполяции
+  const startAngle = toAngle(seg.start, camera).degrees;
+  const endAngle = toAngle(seg.end, camera).degrees;
   
+  // Нормализуем углы
+  let start = startAngle;
+  let end = endAngle;
+  if (end < start) end += 360;
+  
+  // Находим угол для текущего экранного X
+  const t = screenX / camera.screen.width;
+  const viewAngle = camera.angle.degrees - camera.fov.degrees / 2 + camera.fov.degrees * t;
+  let currentAngle = viewAngle;
+  if (currentAngle < start) currentAngle += 360;
+  
+  // Интерполируем позицию на стене
+  const wallT = Math.max(0, Math.min(1, (currentAngle - start) / (end - start)));
+  
+  // Вычисляем смещение текстуры
+  const wallLength = toDistance(seg.start, seg.end);
+  let texOffset = wallT * wallLength;
+  
+  // Применяем масштаб текстуры
+  texOffset = (texOffset / wallLength) * texture.width * (1 / texture.scale);
+  
+  return texOffset;
 }
 
 function drawTexturedVerticalLine(
@@ -97,12 +117,28 @@ function drawTexturedVerticalLine(
   bottomY: number,
   texture: Texture,
   textureX: number,
-  textureStartY: number
+  textureStartY: number,
+  textureScaleY: number = 1
 ): void {
+  if (topY >= bottomY) return;
   
+  const height = bottomY - topY;
+  
+  for (let y = Math.floor(topY); y <= Math.ceil(bottomY); y++) {
+    const t = (y - topY) / height;
+    
+    let texY = textureStartY + t * texture.height * textureScaleY;
+    texY = texY % texture.height;
+    if (texY < 0) texY += texture.height;
+    
+    const color = getTextureColor(texture, textureX, texY);
+    
+    ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+    ctx.fillRect(x, y, 1, 1);
+  }
 }
 
-function createSolidWallRanges(camera: Camera) {
+function createSolidWallRanges(camera: Camera): SolidSegmentRange[] {
   const ranges: SolidSegmentRange[] = [];
 
   ranges.push({ xStart: Number.MIN_SAFE_INTEGER, xEnd: -1 });
@@ -111,31 +147,30 @@ function createSolidWallRanges(camera: Camera) {
   return ranges;
 }
 
-interface ColumnClip {
-  top: number;
-  bottom: number;
-}
-
 function drawSolidSegment(
   ctx: CanvasRenderingContext2D,
   camera: Camera, 
   seg: Seg,
   angles: IntersectionAngles, 
   solidWallRanges: SolidSegmentRange[],
-  upperClip: ColumnClip[],
-  lowerClip: ColumnClip[],
+  upperClip: number[],
+  lowerClip: number[],
 ) {
   const sector = seg.frontSector!;
   const wallColor = sector.wallColor!;
   const floorColor = sector.floorColor!;
   const ceilColor = sector.ceilColor!;
   const wallTexture = sector.wallTexture ? textures[sector.wallTexture] : null;
+  
+  const wallWorldHeight = (sector.ceilHeight ?? 0) - (sector.floorHeight ?? 0);
 
   const projectionX = projectSegX(camera, angles);
   const projectionY = projectSegY(camera, projectionX, sector, seg);
 
   const xStart = projectionX.start;
   const xEnd = projectionX.end;
+  
+  if (Math.abs(xEnd - xStart) < 0.001) return;
 
   const startTop = projectionY.start.top;
   const startBottom = projectionY.start.bottom;
@@ -154,34 +189,40 @@ function drawSolidSegment(
     const top = startTop + (endTop - startTop) * t;
     const bottom = startBottom + (endBottom - startBottom) * t;
     
-    const drawTop = Math.max(upperClip[x].top, top);
-    const drawBottom = Math.min(lowerClip[x].bottom, bottom);
+    const drawTop = Math.max(upperClip[x], top);
+    const drawBottom = Math.min(lowerClip[x], bottom);
     
     if (drawTop >= drawBottom) {
       continue;
     }
 
-    if (drawTop > upperClip[x].top) {
-      drawVerticalLine(ctx, x, Math.floor(upperClip[x].top), drawTop, ceilColor);
+    // Рисуем потолок
+    if (drawTop > upperClip[x]) {
+      drawVerticalLine(ctx, x, Math.floor(upperClip[x]), Math.ceil(drawTop), ceilColor);
     }
 
+    // Рисуем стену с текстурой
     if (wallTexture) {
       const textureOffsetX = getTextureOffsetX(seg, camera, x, wallTexture);
-      const textureOffsetY = 0;
+      
+      const verticalT = (drawTop - top) / (bottom - top);
+      const textureStartY = verticalT * wallWorldHeight * (1 / wallTexture.scale);
+      
       drawTexturedVerticalLine(
         ctx, x, drawTop, drawBottom, 
-        wallTexture, textureOffsetX, textureOffsetY
+        wallTexture, textureOffsetX, textureStartY, 1 / wallTexture.scale
       );
     } else {
-      drawVerticalLine(ctx, x, drawTop, drawBottom, wallColor);
+      drawVerticalLine(ctx, x, Math.ceil(drawTop), Math.floor(drawBottom), wallColor);
     }
 
-    if (drawBottom < lowerClip[x].bottom) {
-      drawVerticalLine(ctx, x, drawBottom, Math.ceil(lowerClip[x].bottom), floorColor);
+    // Рисуем пол
+    if (drawBottom < lowerClip[x]) {
+      drawVerticalLine(ctx, x, Math.floor(drawBottom), Math.ceil(lowerClip[x]), floorColor);
     }
 
-    upperClip[x].top = drawTop;
-    lowerClip[x].bottom = drawBottom;
+    upperClip[x] = drawTop;
+    lowerClip[x] = drawBottom;
   }
 
   addSolidRange(camera, xStart, xEnd, solidWallRanges);
@@ -209,8 +250,8 @@ function drawPortalSegment(
   seg: Seg,
   angles: IntersectionAngles, 
   solidWallRanges: SolidSegmentRange[],
-  upperClip: ColumnClip[],
-  lowerClip: ColumnClip[],
+  upperClip: number[],
+  lowerClip: number[],
 ) {
   const frontSector = seg.frontSector!;
   const backSector = seg.backSector!;
@@ -221,6 +262,9 @@ function drawPortalSegment(
 
   const xStart = projectionX.start;
   const xEnd = projectionX.end;
+  
+  if (Math.abs(xEnd - xStart) < 0.001) return;
+  
   const xFrom = Math.max(0, Math.floor(Math.min(xStart, xEnd)));
   const xTo = Math.min(camera.screen.width - 1, Math.ceil(Math.max(xStart, xEnd)));
 
@@ -231,6 +275,9 @@ function drawPortalSegment(
 
   const wallTexture = otherSector.wallTexture ? textures[otherSector.wallTexture] : null;
   const portalWallType = getPortalWallType(currentSector, otherSector);
+  
+  const upperWallHeight = Math.abs(currentSector.ceilHeight! - otherSector.ceilHeight!);
+  const lowerWallHeight = Math.abs(currentSector.floorHeight! - otherSector.floorHeight!);
 
   for (let x = xFrom; x <= xTo; x++) {
     if (!isWallVisible(x, solidWallRanges)) {
@@ -258,8 +305,8 @@ function drawPortalSegment(
     const otherTop = isFront ? backTop : frontTop;
     const otherBottom = isFront ? backBottom : frontBottom;
 
-    const oldTop = upperClip[x].top;
-    const oldBottom = lowerClip[x].bottom;
+    const oldTop = upperClip[x];
+    const oldBottom = lowerClip[x];
 
     const drawTop = Math.max(oldTop, portalTop);
     const drawBottom = Math.min(oldBottom, portalBottom);
@@ -268,68 +315,72 @@ function drawPortalSegment(
       continue;
     }
 
+    // Рисуем потолок текущего сектора (над порталом)
     if (drawTop > oldTop) {
-      drawVerticalLine(ctx, x, Math.floor(oldTop), drawTop, currentSector.ceilColor!);
-      upperClip[x].top = drawTop;
+      drawVerticalLine(ctx, x, Math.floor(oldTop), Math.ceil(drawTop), currentSector.ceilColor!);
+      upperClip[x] = drawTop;
     }
 
+    // Отрисовка верхней стены портала (upper)
     if (portalWallType === 'upper' || portalWallType === 'both') {
       const wallTop = drawTop;
       const wallBottom = Math.min(drawBottom, Math.max(drawTop, otherTop));
-      if (wallTop < wallBottom) {
+      
+      if (wallTop < wallBottom && upperWallHeight > 0) {
         if (wallTexture) {
           const textureOffsetX = getTextureOffsetX(seg, camera, x, wallTexture);
-          const textureOffsetY = 0;
+          
+          const tVertical = (wallTop - portalTop) / Math.max(0.001, otherTop - portalTop);
+          const textureStartY = tVertical * upperWallHeight * (1 / wallTexture.scale);
+          
           drawTexturedVerticalLine(
             ctx, x, wallTop, wallBottom, 
-            wallTexture, textureOffsetX, textureOffsetY
+            wallTexture, textureOffsetX, textureStartY, 1 / wallTexture.scale
           );
         } else {
           drawVerticalLine(ctx, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
         }
-        upperClip[x].top = wallBottom;
+        upperClip[x] = wallBottom;
       }
     }
 
+    // Отрисовка нижней стены портала (lower)
     if (portalWallType === 'lower' || portalWallType === 'both') {
       const wallTop = Math.max(drawTop, Math.min(drawBottom, otherBottom));
       const wallBottom = drawBottom;
-      if (wallTop < wallBottom) {
+      
+      if (wallTop < wallBottom && lowerWallHeight > 0) {
         if (wallTexture) {
           const textureOffsetX = getTextureOffsetX(seg, camera, x, wallTexture);
-          const textureOffsetY = 0;
+          
+          const tVertical = (wallBottom - portalBottom) / Math.max(0.001, portalBottom - otherBottom);
+          const textureStartY = tVertical * lowerWallHeight * (1 / wallTexture.scale);
+          
           drawTexturedVerticalLine(
             ctx, x, wallTop, wallBottom, 
-            wallTexture, textureOffsetX, textureOffsetY
+            wallTexture, textureOffsetX, textureStartY, 1 / wallTexture.scale
           );
         } else {
           drawVerticalLine(ctx, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
         }
-        lowerClip[x].bottom = wallTop;
+        lowerClip[x] = wallTop;
       }
     }
 
+    // Рисуем пол текущего сектора (под порталом)
     if (drawBottom < oldBottom) {
-      drawVerticalLine(ctx, x, drawBottom, Math.ceil(oldBottom), currentSector.floorColor!);
-      lowerClip[x].bottom = drawBottom;
+      drawVerticalLine(ctx, x, Math.floor(drawBottom), Math.ceil(oldBottom), currentSector.floorColor!);
+      lowerClip[x] = drawBottom;
     }
 
-    upperClip[x].top = Math.max(upperClip[x].top, Math.max(drawTop, otherTop));
-    lowerClip[x].bottom = Math.min(lowerClip[x].bottom, Math.min(drawBottom, otherBottom));
+    // Обновляем clip-массивы с учётом портальной стены
+    if (portalWallType === 'upper' || portalWallType === 'both') {
+      upperClip[x] = Math.max(upperClip[x], otherTop);
+    }
+    if (portalWallType === 'lower' || portalWallType === 'both') {
+      lowerClip[x] = Math.min(lowerClip[x], otherBottom);
+    }
   }
-}
-
-function createColumnClip(camera: Camera): ColumnClip[] {
-  const clips = new Array(camera.screen.width);
-
-  for (let x = 0; x < camera.screen.width; x++) {
-    clips[x] = {
-      top: -1,
-      bottom: camera.screen.height,
-    };
-  }
-
-  return clips;
 }
 
 export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
@@ -339,8 +390,8 @@ export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
   ) {
     const camera = settings.camera;
     const wallRanges = createSolidWallRanges(camera);
-    const upperClip = createColumnClip(camera);
-    const lowerClip = createColumnClip(camera);
+    const upperClip = new Array(camera.screen.width).fill(-Infinity);
+    const lowerClip = new Array(camera.screen.width).fill(Infinity);
 
     traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
       for (const seg of bspNode.segs) {

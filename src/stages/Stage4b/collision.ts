@@ -11,7 +11,7 @@ export interface CollisionConfig {
 
 export const DEFAULT_CONFIG: CollisionConfig = {
   playerRadius: 8,
-  stepHeight: 500
+  stepHeight: 1000
 };
 
 export function isSolidWall(seg: Seg): boolean {

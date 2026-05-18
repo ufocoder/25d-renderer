@@ -34,6 +34,7 @@ const Stage: Component = () => {
           <h2 class="flex justify-center text-2xl">2D Renderer</h2>
           <div class="flex justify-center">
             <Map2d
+                withControls
                 width={400}
                 height={320}
                 settings={settings}

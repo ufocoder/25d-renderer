@@ -1,15 +1,11 @@
 import { projectSeg, type SegProjection } from "@app/stages/Stage2i/projection";
-import { buildBSPTree } from "@app/stages/Stage3a/bsp/build";
-import { traverseBSPTree } from "@app/stages/Stage3a/bsp/traverse";
-import type { BSPLeaf } from "@app/stages/Stage3a/bsp/typings";
+import { buildBSPTree } from "@app/stages/Stage3b/bsp/build";
+import { traverseBSPTree } from "@app/stages/Stage3b/bsp/traverse";
+import type { BSPLeaf } from "@app/stages/Stage3b/bsp/typings";
 
 interface SolidSegmentRange {
   xStart: number;
   xEnd: number;
-}
-
-function isPortal(seg: Seg): boolean {
-  return Boolean(seg.isTwoSide && seg.backSector && seg.backSector !== seg.frontSector);
 }
 
 function isWallVisible(x: number, ranges: SolidSegmentRange[]): boolean {
@@ -161,9 +157,7 @@ export default function render25d(
         continue;
       }
 
-      if (!isPortal(seg)) {
-        drawSolidWall(ctx, camera, seg, projection, solidWallRanges);
-      }
+      drawSolidWall(ctx, camera, seg, projection, solidWallRanges);
     }
   });
 }
