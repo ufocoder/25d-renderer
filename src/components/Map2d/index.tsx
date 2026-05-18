@@ -3,9 +3,13 @@ import { createSignal, onCleanup } from "solid-js";
 import KeyboardControls, { type KeyboardControlsProps } from "./Controls";
 
 type Map2dProps = KeyboardControlsProps & Pick<RendererProps, 'render' | 'settings' | 'width' | 'height'> & {
+  withControls?: boolean;
   withDebug?: boolean;
   withZoom?: boolean;
   withGrid?: boolean;
+  initialZoom?: number;
+  initialOffsetX?: number;
+  initialOffsetY?: number;
   canvasClassName?: string;
 };
 
@@ -16,17 +20,21 @@ const CANVAS_HEIGHT = 320;
 
 export default function Map2d({
   withVertical,
+  withControls,
   withZoom,
   withDebug,
   canvasClassName,
   settings,
   render,
+  initialZoom = 1,
+  initialOffsetX = 0,
+  initialOffsetY = 0,
   width = CANVAS_WIDTH,
   height = CANVAS_HEIGHT
 }: Map2dProps) {
-  const [scale, setScale] = createSignal(1);
-  const [offsetX, setOffsetX] = createSignal(0);
-  const [offsetY, setOffsetY] = createSignal(0);
+  const [scale, setScale] = createSignal(initialZoom);
+  const [offsetX, setOffsetX] = createSignal(initialOffsetX);
+  const [offsetY, setOffsetY] = createSignal(initialOffsetY);
 
   let containerRef: HTMLDivElement | null = null;
   const [isPanning, setIsPanning] = createSignal(false);
@@ -180,9 +188,11 @@ export default function Map2d({
           </div>
         )}
       </div>
-      <div class="flex justify-center mt-1">
-        <KeyboardControls withVertical={withVertical} />
-      </div>
+      {withControls &&(
+        <div class="flex justify-center mt-1">
+          <KeyboardControls withVertical={withVertical} />
+        </div>
+      )}
       {withDebug && (
         <div class="flex justify-center text-xs text-gray-500 mt-1">
           Координаты {settings().camera.x.toFixed(2)} x {settings().camera.y.toFixed(2)}, угол {settings().camera.angle.degrees} <br />

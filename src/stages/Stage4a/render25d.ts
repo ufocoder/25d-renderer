@@ -1,6 +1,6 @@
-import { getPointSide } from "@app/stages/Stage3a/bsp/geometry";
-import { traverseBSPTree } from "@app/stages/Stage3a/bsp/traverse";
-import type { BSPLeaf, BSPNode } from "@app/stages/Stage3a/bsp/typings";
+import { getPointSide } from "@app/stages/Stage3b/bsp/geometry";
+import { traverseBSPTree } from "@app/stages/Stage3b/bsp/traverse";
+import type { BSPLeaf, BSPNode } from "@app/stages/Stage3b/bsp/typings";
 import { projectSegX, projectSegY, type ProjectionScreenX } from "./projection";
 
 
@@ -90,19 +90,14 @@ function createSolidWallRanges(camera: Camera) {
   return ranges;
 }
 
-interface ColumnClip {
-  top: number;
-  bottom: number;
-}
-
 function drawSolidSegment(
   ctx: CanvasRenderingContext2D,
   camera: Camera, 
   seg: Seg,
   projectionX: ProjectionScreenX, 
   solidWallRanges: SolidSegmentRange[],
-  upperClip: ColumnClip[],
-  lowerClip: ColumnClip[],
+  upperClip: number[],
+  lowerClip: number[],
 ) {
   const sector = seg.frontSector!;
   const wallColor = sector.wallColor!;
@@ -126,30 +121,30 @@ function drawSolidSegment(
     if (!isWallVisible(x, solidWallRanges)) {
       continue;
     }
-
+    
     const t = (x - xStart) / (xEnd - xStart);
-    const top = startTop + (endTop - startTop) * t;
-    const bottom = startBottom + (endBottom - startBottom) * t;
+    const top = Math.ceil(startTop + (endTop - startTop) * t);
+    const bottom = Math.floor(startBottom + (endBottom - startBottom) * t);
     
-    const drawTop = Math.max(upperClip[x].top, top);
-    const drawBottom = Math.min(lowerClip[x].bottom, bottom);
+    let drawTop = Math.max(upperClip[x], top);
+    let drawBottom = Math.min(lowerClip[x], bottom);
     
-    if (drawTop >= drawBottom) {
+    if (top >= bottom) {
       continue;
     }
 
-    if (drawTop > upperClip[x].top) {
-      drawVerticalLine(ctx, x, Math.floor(upperClip[x].top), drawTop, ceilColor);
+    if (drawTop > upperClip[x]) {
+      drawVerticalLine(ctx, x, Math.floor(upperClip[x]), Math.min(lowerClip[x], drawTop), ceilColor);
     }
 
     drawVerticalLine(ctx, x, drawTop, drawBottom, wallColor);
 
-    if (drawBottom < lowerClip[x].bottom) {
-      drawVerticalLine(ctx, x, drawBottom, Math.ceil(lowerClip[x].bottom), floorColor);
+    if (drawBottom < lowerClip[x]) {
+      drawVerticalLine(ctx, x, Math.max(drawBottom, upperClip[x]), Math.ceil(lowerClip[x]), floorColor);
     }
 
-    upperClip[x].top = drawTop;
-    lowerClip[x].bottom = drawBottom;
+    upperClip[x] = drawTop;
+    lowerClip[x] = drawBottom;
   }
 
   addSolidRange(camera, xStart, xEnd, solidWallRanges);
@@ -177,8 +172,8 @@ function drawPortalSegment(
   seg: Seg,
   projectionX: ProjectionScreenX, 
   solidWallRanges: SolidSegmentRange[],
-  upperClip: ColumnClip[],
-  lowerClip: ColumnClip[],
+  upperClip: number[],
+  lowerClip: number[],
 ) {
   const frontSector = seg.frontSector!;
   const backSector = seg.backSector!;
@@ -218,13 +213,13 @@ function drawPortalSegment(
       backBottom = backProjectionY.start.bottom + (backProjectionY.end.bottom - backProjectionY.start.bottom) * t;
     }
 
-    const portalTop = isFront ? frontTop : backTop;
-    const portalBottom = isFront ? frontBottom : backBottom;
-    const otherTop = isFront ? backTop : frontTop;
-    const otherBottom = isFront ? backBottom : frontBottom;
+    const portalTop = Math.ceil(isFront ? frontTop : backTop);
+    const portalBottom = Math.floor(isFront ? frontBottom : backBottom);
+    const otherTop = Math.ceil(isFront ? backTop : frontTop);
+    const otherBottom = Math.floor(isFront ? backBottom : frontBottom);
 
-    const oldTop = upperClip[x].top;
-    const oldBottom = lowerClip[x].bottom;
+    const oldTop = upperClip[x];
+    const oldBottom = lowerClip[x];
 
     const drawTop = Math.max(oldTop, portalTop);
     const drawBottom = Math.min(oldBottom, portalBottom);
@@ -235,7 +230,7 @@ function drawPortalSegment(
 
     if (drawTop > oldTop) {
       drawVerticalLine(ctx, x, Math.floor(oldTop), drawTop, currentSector.ceilColor!);
-      upperClip[x].top = drawTop;
+      upperClip[x] = drawTop;
     }
 
     if (portalWallType === 'upper' || portalWallType === 'both') {
@@ -243,7 +238,7 @@ function drawPortalSegment(
       const wallBottom = Math.min(drawBottom, Math.max(drawTop, otherTop));
       if (wallTop < wallBottom) {
         drawVerticalLine(ctx, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
-        upperClip[x].top = wallBottom;
+        upperClip[x] = wallBottom;
       }
     }
 
@@ -252,31 +247,18 @@ function drawPortalSegment(
       const wallBottom = drawBottom;
       if (wallTop < wallBottom) {
         drawVerticalLine(ctx, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
-        lowerClip[x].bottom = wallTop;
+        lowerClip[x] = wallTop;
       }
     }
 
     if (drawBottom < oldBottom) {
       drawVerticalLine(ctx, x, drawBottom, Math.ceil(oldBottom), currentSector.floorColor!);
-      lowerClip[x].bottom = drawBottom;
+      lowerClip[x] = drawBottom;
     }
 
-    upperClip[x].top = Math.max(upperClip[x].top, Math.max(drawTop, otherTop));
-    lowerClip[x].bottom = Math.min(lowerClip[x].bottom, Math.min(drawBottom, otherBottom));
+    upperClip[x] = Math.max(upperClip[x], Math.max(drawTop, otherTop));
+    lowerClip[x] = Math.min(lowerClip[x], Math.min(drawBottom, otherBottom));
   }
-}
-
-function createColumnClip(camera: Camera): ColumnClip[] {
-  const clips = new Array(camera.screen.width);
-
-  for (let x = 0; x < camera.screen.width; x++) {
-    clips[x] = {
-      top: -1,
-      bottom: camera.screen.height,
-    };
-  }
-
-  return clips;
 }
 
 export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
@@ -286,8 +268,8 @@ export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
   ) {
     const camera = settings.camera;
     const wallRanges = createSolidWallRanges(camera);
-    const upperClip = createColumnClip(camera);
-    const lowerClip = createColumnClip(camera);
+    const upperClip = new Array(camera.screen.width).fill(-1);
+    const lowerClip = new Array(camera.screen.width).fill(camera.screen.height);
 
     traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
       for (const seg of bspNode.segs) {

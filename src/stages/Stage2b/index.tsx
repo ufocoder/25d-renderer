@@ -1,4 +1,5 @@
 import Canvas from "@app/Canvas/CanvasBase";
+import CodeBlock from "@app/components/Code";
 import Map2d from '@app/components/Map2d';
 import RepoLink from "@app/components/RepoLink";
 import { useCameraControls } from '@app/hooks/useCameraControls';
@@ -58,6 +59,7 @@ const Stage: Component = () => {
           <div class="flex justify-center">
             
           <Map2d
+            withControls
             width={400}
             height={320}
             settings={settings}
@@ -66,6 +68,7 @@ const Stage: Component = () => {
         </div>
       </div>
 
+      <CodeBlock code={code1} lang="ts" />
 
       <p class="my-2">
         <RepoLink filePath="stages/Stage2a/render25d.ts">Реализация шага на github</RepoLink>

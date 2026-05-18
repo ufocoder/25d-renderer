@@ -1,9 +1,9 @@
 
 import { Angle } from "@app/lib/Angle";
 import { drawAngleLine, drawPolygon } from "@app/lib/canvas";
-import { calculatePolygonCenter, sortPointsClockwise, uniquePoints } from "@app/stages/Stage3a/bsp/geometry";
-import { traverseBSPTree } from "@app/stages/Stage3a/bsp/traverse";
-import type { BSPLeaf, BSPNode } from "@app/stages/Stage3a/bsp/typings";
+import { calculatePolygonCenter, sortPointsClockwise, uniquePoints } from "@app/stages/Stage3b/bsp/geometry";
+import { traverseBSPTree } from "@app/stages/Stage3b/bsp/traverse";
+import type { BSPLeaf, BSPNode } from "@app/stages/Stage3b/bsp/typings";
 
 const RAY_LENGTH = 500;
 const SCALE_DEFAULT = 1;

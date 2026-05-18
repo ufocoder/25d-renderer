@@ -1,12 +1,12 @@
 import { Angle } from "@app/lib/Angle";
 import createLoop from "@app/lib/loop";
-import { findCameraSector } from "@app/stages/Stage3a/bsp/traverse";
-import type { BSPNode } from "@app/stages/Stage3a/bsp/typings";
+import { findCameraSector } from "@app/stages/Stage3b/bsp/traverse";
+import type { BSPNode } from "@app/stages/Stage3b/bsp/typings";
 import { createSignal, onCleanup, type Accessor, type Setter } from "solid-js";
 import { checkCollisionOptimized, DEFAULT_CONFIG } from "../collision";
 
 const DEFAULT_CAMERA_HEIGHT = 500;
-const DEFAULT_CAMERA_VERTICAL_SPEED = 50;
+const DEFAULT_CAMERA_VERTICAL_SPEED = 25;
 
 interface UseCameraControlsProps {
   bspTree: BSPNode;
@@ -71,7 +71,7 @@ export function useCameraControlsV3({
     
     newZ = Math.max(
       sector.floorHeight! + height,
-      Math.min(sector.ceilHeight! - height, newZ)
+      Math.min(sector.ceilHeight!, newZ)
     );
 
     return {

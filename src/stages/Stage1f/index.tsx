@@ -9,7 +9,7 @@ import render25dstage1e from '../Stage1e/render25d';
 import defaultSettings from './settings';
 import { processLevel } from './utils';
 
-const Stage4: Component = () => {
+const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
   const [settings2, setSettings2] = createSignal<Settings>(processLevel(settings()));
   
@@ -65,6 +65,7 @@ const Stage4: Component = () => {
           <h2 class="flex justify-center text-2xl">2D Renderer</h2>
           <div class="flex justify-center">
             <Map2d
+              withControls
               settings={settings2}
               render={render2d}
             />
@@ -81,4 +82,4 @@ const Stage4: Component = () => {
   );
 };
 
-export default Stage4;
+export default Stage;

@@ -1,12 +1,14 @@
 import { Angle } from "@app/lib/Angle";
 import createLoop from "@app/lib/loop";
-import { findCameraSector } from "@app/stages/Stage3a/bsp/traverse";
-import type { BSPNode } from "@app/stages/Stage3a/bsp/typings";
+import { findCameraSector } from "@app/stages/Stage3b/bsp/traverse";
+import type { BSPNode } from "@app/stages/Stage3b/bsp/typings";
 import { createSignal, onCleanup, type Accessor, type Setter } from "solid-js";
-import { checkCollisionOptimized, DEFAULT_CONFIG } from "../collision";
+import { checkCollisionOptimized, DEFAULT_CONFIG } from "../../Stage4b/collision";
 
 const DEFAULT_CAMERA_HEIGHT = 500;
 const DEFAULT_CAMERA_VERTICAL_SPEED = 50;
+const CAMERA_BOBBING_AMPLITUDE = 150; // Амплитуда покачивания
+const CAMERA_BOBBING_SPEED = 50; // Скорость покачивания
 
 interface UseCameraControlsProps {
   bspTree: BSPNode;
@@ -21,6 +23,10 @@ export function useCameraControlsV4({
   const [isRising, setRising] = createSignal(0);
   const [isMoving, setMoving] = createSignal(0);
   const [isRotating, setRotating] = createSignal(0);
+  
+  // Состояние для покачивания камеры
+  let bobbingTime = 0;
+  let lastMoveTime = 0;
 
   function moveCamera(camera: Camera, direction: number, sector: Sector, settings: Settings) {
     const moveSpeed = camera.moveSpeed;
@@ -45,6 +51,25 @@ export function useCameraControlsV4({
     
     const height = camera.height || DEFAULT_CAMERA_HEIGHT;
     let newZ = sector.floorHeight! + height;
+    
+    // Добавляем покачивание при движении
+    const currentTime = Date.now();
+    if (direction !== 0) {
+      // Если движемся, обновляем время для покачивания
+      if (lastMoveTime === 0) {
+        lastMoveTime = currentTime;
+      }
+      bobbingTime += (currentTime - lastMoveTime) * CAMERA_BOBBING_SPEED / 1000;
+      lastMoveTime = currentTime;
+      
+      // Рассчитываем смещение по Y (вертикальное покачивание)
+      const bobOffset = Math.sin(bobbingTime) * CAMERA_BOBBING_AMPLITUDE;
+      newZ += bobOffset;
+    } else {
+      // Если не движемся, сбрасываем покачивание
+      bobbingTime = 0;
+      lastMoveTime = 0;
+    }
 
     const oldFloorZ = camera.z! - height;
     const newFloorZ = sector.floorHeight!;
@@ -52,6 +77,9 @@ export function useCameraControlsV4({
     
     if (stepUp > 0 && stepUp <= DEFAULT_CONFIG.stepHeight) {
       newZ = sector.floorHeight! + height;
+      if (direction !== 0) {
+        newZ += Math.sin(bobbingTime) * CAMERA_BOBBING_AMPLITUDE;
+      }
     } else if (stepUp > DEFAULT_CONFIG.stepHeight) {
       return { ...camera };
     }
@@ -71,7 +99,7 @@ export function useCameraControlsV4({
     
     newZ = Math.max(
       sector.floorHeight! + height,
-      Math.min(sector.ceilHeight! - height, newZ)
+      Math.min(sector.ceilHeight!, newZ)
     );
 
     return {
@@ -97,6 +125,31 @@ export function useCameraControlsV4({
           ...prev,
           camera: moveCamera(prev.camera, isMoving(), sector, prev),
         };
+      });
+    } else {
+      // Сбрасываем покачивание, когда движение прекращается
+      bobbingTime = 0;
+      lastMoveTime = 0;
+      
+      // Возвращаем камеру на нормальную высоту, если было покачивание
+      setSettings((prev) => {
+        const sector = findCameraSector(bspTree, prev.camera);
+        if (!sector) return prev;
+        
+        const height = prev.camera.height || DEFAULT_CAMERA_HEIGHT;
+        const currentZ = prev.camera.z!;
+        const targetZ = sector.floorHeight! + height;
+        
+        if (Math.abs(currentZ - targetZ) > 0.1) {
+          return {
+            ...prev,
+            camera: {
+              ...prev.camera,
+              z: targetZ
+            }
+          };
+        }
+        return prev;
       });
     }
 

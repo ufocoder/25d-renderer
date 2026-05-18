@@ -1,8 +1,8 @@
 import { Angle } from "@app/lib/Angle";
 
 const camera: Camera = {
-  x: 15,  
-  y: 175,
+  x: 115,  
+  y: 125,
   z: 2_000,
   height: 2_000,
   fov: new Angle(45),
@@ -77,12 +77,12 @@ const stepSector5: Sector = {
   segs: []
 };
 
-const columnSector1: Sector = { id: 6, floorHeight: 8_000, floorColor: "#900000", ceilHeight: 8_000, ceilColor: "#900000", wallColor: "red", segs: []};
-const columnSector2: Sector = { id: 7, floorHeight: 10_000, floorColor: "green", ceilHeight: 10_000, ceilColor: "#999", wallColor: "#900000", segs: []};
-const columnSector3: Sector = { id: 8, floorHeight: 8_000, floorColor: "green", ceilHeight: 8_000, ceilColor: "#999", wallColor: "#900000", segs: []};
-const columnSector4: Sector = { id: 9, floorHeight: 10_000, floorColor: "green", ceilHeight: 10_000, ceilColor: "#999", wallColor: "red", segs: []};
-const columnSector5: Sector = { id: 10, floorHeight: 9_000, floorColor: "green", ceilHeight: 9_000, ceilColor: "#999", wallColor: "#900000", segs: []};
-const columnSector6: Sector = { id: 10, floorHeight: 7_000, floorColor: "green", ceilHeight: 7_000, ceilColor: "#999", wallColor: "red", segs: []};
+const columnSector1: Sector = { id: 6, floorHeight: 4_000, floorColor: "#900000", ceilHeight: 8_000, ceilColor: "green", wallColor: "red", segs: []};
+const columnSector2: Sector = { id: 7, floorHeight: 1_000, floorColor: "green", ceilHeight: 2_000, ceilColor: "green", wallColor: "#900000", segs: []};
+const columnSector3: Sector = { id: 8, floorHeight: 8_000, floorColor: "green", ceilHeight: 8_000, ceilColor: "green", wallColor: "#900000", segs: []};
+const columnSector4: Sector = { id: 9, floorHeight: 10_000, floorColor: "green", ceilHeight: 10_000, ceilColor: "green", wallColor: "red", segs: []};
+const columnSector5: Sector = { id: 10, floorHeight: 1_000, floorColor: "green", ceilHeight: 8_000, ceilColor: "green", wallColor: "#900000", segs: []};
+const columnSector6: Sector = { id: 11, floorHeight: 5_000, floorColor: "green", ceilHeight: 9_000, ceilColor: "green", wallColor: "red", segs: []};
 
 const createRect = (x: number, y: number, xs: number, ys: number, isTwoSide: boolean, isSolid: boolean  , frontSector: Sector, backSector?: Sector): Seg[] => ([
   { start: { x, y }, end: { x: x + xs, y }, isTwoSide, isSolid, frontSector, backSector },

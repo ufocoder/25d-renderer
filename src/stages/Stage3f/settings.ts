@@ -1,11 +1,12 @@
 import { Angle } from "@app/lib/Angle";
+import { createRectangleLines } from "@app/lib/level";
 
 const camera: Camera = {
-  x: 200,
-  y: 380,
+  x: 70,
+  y: 70,
   z: 16,
   fov: new Angle(45),
-  angle: new Angle(-90),
+  angle: new Angle(0),
   screen: {
     width: 400,
     height: 320,
@@ -14,95 +15,94 @@ const camera: Camera = {
   rotationSpeed: 2,
 };
 
-const groundSector: Sector = {
+const room1: Sector = {
   id: 1,
   floorHeight: 0,
   floorColor: "#444",
   ceilHeight: 10_000,
   ceilColor: "#87CEEB",
-  wallColor: "#666",
+  wallColor: '#666',
   segs: []
 };
 
-const step1Sector: Sector = {
+const room2: Sector = {
   id: 2,
   floorHeight: 0,
-  floorColor: "#8B6914",
-  ceilHeight: 2_000,
+  floorColor: "#666",
+  ceilHeight: 10_000,
   ceilColor: "#87CEEB",
-  wallColor: "#A0522D",
+  wallColor: '#888',
   segs: []
 };
 
-const step2Sector: Sector = {
+const room3: Sector = {
   id: 3,
-  floorHeight: 2_000,
-  floorColor: "#020100",
+  floorHeight: 0,
+  floorColor: "#888",
   ceilHeight: 10_000,
   ceilColor: "#87CEEB",
-  wallColor: "#A0522D",
+  wallColor: '#999',
   segs: []
 };
 
-const step3Sector: Sector = {
+const room4: Sector = {
   id: 4,
-  floorHeight: 3_000,
-  floorColor: "#8B6914",
+  floorHeight: 0,
+  floorColor: "#999",
   ceilHeight: 10_000,
   ceilColor: "#87CEEB",
-  wallColor: "#A0522D",
+  wallColor: "#AAA",
   segs: []
 };
 
+const segs1 = createRectangleLines(120, 70, 150, 80, '#FF9500')
+  .map(seg => {
+    seg.frontSector = room1
+    return seg;
+  });
 
-const step1Size = 120;
-const step2Size = 80;
-const step3Size = 40;
+const segs2 = createRectangleLines(270, 70, 150, 80, '#FFCC00')
+  .map(seg => {
+    seg.frontSector = room2;
+    return seg;
+  });
 
-const centerX = 200;
-const centerY = 200;
+const segs3 = createRectangleLines(385, 70, 80, 80, '#FF2D55')
+  .map(seg => {
+    seg.frontSector = room3;
+    return seg;
+  });
 
+const segs4 = createRectangleLines(385, 150, 80, 80, '#FF2D55')
+  .map(seg => {
+    seg.frontSector = room4;
+    return seg;
+  });
 
-function createTwoSideSegments(x: number, y: number, size: number, frontSector: Sector, backSector: Sector): Seg[] {
-  const half = size / 2;
-  const left = x - half;
-  const right = x + half;
-  const top = y - half;
-  const bottom = y + half;
-  
-  return [
-    { start: { x: left, y: top }, end: { x: right, y: top }, frontSector, backSector, isTwoSide: true },
-    { start: { x: right, y: top }, end: { x: right, y: bottom }, frontSector, backSector, isTwoSide: true },
-    { start: { x: right, y: bottom }, end: { x: left, y: bottom }, frontSector, backSector, isTwoSide: true },
-    { start: { x: left, y: bottom }, end: { x: left, y: top }, frontSector, backSector, isTwoSide: true }
-  ];
-}
+segs1[1].backSector = room2;
+segs1[1].isTwoSide = true
 
+segs2[3].backSector = room1;
+segs2[3].isTwoSide = true;
+segs2[1].backSector = room1;
+segs2[1].isTwoSide = true;
 
-const step3Walls = createTwoSideSegments(centerX, centerY, step3Size, step3Sector, step2Sector);
-const step2Walls = createTwoSideSegments(centerX, centerY, step2Size, step2Sector, step1Sector);
-const step1Walls = createTwoSideSegments(centerX, centerY, step1Size, step1Sector, groundSector);
+segs3[3].backSector = room2;
+segs3[3].isTwoSide = true;
+segs3[2].backSector = room4;
+segs3[2].isTwoSide = true;
 
+segs4[0].backSector = room3;
+segs4[0].isTwoSide = true;
 
-const roomWalls = [
-  { start: { x: 0, y: 0 }, end: { x: 400, y: 0 }, frontSector: groundSector, backSector: undefined, isTwoSide: false },
-  { start: { x: 400, y: 0 }, end: { x: 400, y: 400 }, frontSector: groundSector, backSector: undefined, isTwoSide: false },
-  { start: { x: 400, y: 400 }, end: { x: 0, y: 400 }, frontSector: groundSector, backSector: undefined, isTwoSide: false },
-  { start: { x: 0, y: 400 }, end: { x: 0, y: 0 }, frontSector: groundSector, backSector: undefined, isTwoSide: false }
-];
-
-
-groundSector.segs = [...roomWalls, ...step1Walls];
-step1Sector.segs = [...step1Walls];
-step2Sector.segs = [...step2Walls, ...step3Walls];
-step3Sector.segs = step3Walls;
-
-const allSegments = [...roomWalls, ...step1Walls];//, ...step2Walls];//, ...step3Walls];
-const allSectors = [groundSector, step1Sector];//, step2Sector]//, step3Sector];
+room1.segs = segs1;
+room2.segs = segs2;
+room3.segs = segs3;
+room4.segs = segs4;
 
 const level: Level = {
-  linedefs: allSegments,
-  sectors: allSectors
+  linedefs: [...segs1, ...segs2, ...segs3, ...segs4],
+  sectors: [room1, room2, room3, room4]
 };
 
 const settings: Settings = {

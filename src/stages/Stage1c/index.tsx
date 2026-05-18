@@ -36,6 +36,7 @@ const Stage: Component = () => {
           <h2 class="flex justify-center text-2xl">2D Renderer</h2>
           <div class="flex justify-center">
             <Map2d
+              withControls
               settings={settings}
               render={render2d}
             />
@@ -70,7 +71,9 @@ const Stage: Component = () => {
         Проекционное расстояние (с учётом угла обзора):
       </p>
       <Content class="my-2">
+        <Formula latex="d = \sqrt{\Delta x^2 + \Delta y^2}" />
         <Formula latex="d_{\text{proj}} = d \cdot \cos(\theta_{\text{rel}})" />
+        <Formula latex="h = \frac{H_{\text{wall}}}{d_{\text{proj}}}" />
       </Content>
       <p class="my-2">
         <RepoLink filePath="stages/Stage1c/render25d.ts">Реализация шага на github</RepoLink>

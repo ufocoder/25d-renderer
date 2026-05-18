@@ -3,7 +3,6 @@ import { drawCircle, drawLinedef } from "@app/lib/canvas";
 
 const VERTEX_DOT_SIZE = 2;
 const CAMERA_DOT_SIZE = 5;
-const GRID_SIZE = 50; 
 
 function worldToScreen(
   worldX: number,
@@ -83,47 +82,70 @@ function getIntersectionWithCanvasEdges(
 }
 
 function drawGrid(
-  ctx: CanvasRenderingContext2D, 
-  offsetX: number, 
-  offsetY: number, 
+  ctx: CanvasRenderingContext2D,
+  offsetX: number,
+  offsetY: number,
   scale: number,
-  width: number,
-  height: number
+  canvasWidth: number,
+  canvasHeight: number,
+  gridSize: number = 1
 ) {
-  const scaledGridSize = GRID_SIZE * scale;
-
-  const startX = -offsetX;
-  const startY = -offsetY;
-  
-  const firstX = Math.ceil(startX / scaledGridSize) * scaledGridSize;
-  const firstY = Math.ceil(startY / scaledGridSize) * scaledGridSize;
-  
   ctx.save();
-  ctx.strokeStyle = '#cccccc';
+  ctx.strokeStyle = "#e0e0e0";
   ctx.lineWidth = 1;
+  ctx.setLineDash([]);
   
-  for (let x = firstX; x < width + startX; x += scaledGridSize) {
-    const screenX = x + offsetX;
-    if (screenX >= 0 && screenX <= width) {
+  const worldLeft = (-offsetX) / scale;
+  const worldTop = (-offsetY) / scale;
+  const worldRight = (canvasWidth - offsetX) / scale;
+  const worldBottom = (canvasHeight - offsetY) / scale;
+  
+  const startX = Math.floor(worldLeft / gridSize) * gridSize;
+  const startY = Math.floor(worldTop / gridSize) * gridSize;
+  const endX = Math.ceil(worldRight / gridSize) * gridSize;
+  const endY = Math.ceil(worldBottom / gridSize) * gridSize;
+  
+  for (let x = startX; x <= endX; x += gridSize) {
+    const screenX = x * scale + offsetX;
+    if (screenX >= 0 && screenX <= canvasWidth) {
       ctx.beginPath();
       ctx.moveTo(screenX, 0);
-      ctx.lineTo(screenX, height);
+      ctx.lineTo(screenX, canvasHeight);
       ctx.stroke();
     }
   }
   
-  for (let y = firstY; y < height + startY; y += scaledGridSize) {
-    const screenY = y + offsetY;
-    if (screenY >= 0 && screenY <= height) {
+  for (let y = startY; y <= endY; y += gridSize) {
+    const screenY = y * scale + offsetY;
+    if (screenY >= 0 && screenY <= canvasHeight) {
       ctx.beginPath();
       ctx.moveTo(0, screenY);
-      ctx.lineTo(width, screenY);
+      ctx.lineTo(canvasWidth, screenY);
       ctx.stroke();
     }
+  }
+  
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#c0c0c0";
+  
+  const originYScreen = 0 * scale + offsetY;
+  if (originYScreen >= 0 && originYScreen <= canvasHeight) {
+    ctx.beginPath();
+    ctx.moveTo(0, originYScreen);
+    ctx.lineTo(canvasWidth, originYScreen);
+    ctx.stroke();
+  }
+  
+  const originXScreen = 0 * scale + offsetX;
+  if (originXScreen >= 0 && originXScreen <= canvasWidth) {
+    ctx.beginPath();
+    ctx.moveTo(originXScreen, 0);
+    ctx.lineTo(originXScreen, canvasHeight);
+    ctx.stroke();
   }
   
   ctx.restore();
-};
+}
 
 function drawLine(ctx: CanvasRenderingContext2D, fromX: number, fromY: number, toX: number, toY: number) {
   ctx.beginPath();
@@ -143,7 +165,7 @@ export default function render2d(
   const canvasWidth = ctx.canvas.width;
   const canvasHeight = ctx.canvas.height;
 
-  // drawGrid(ctx, offsetX, offsetY, scale, canvasWidth, canvasHeight);
+  drawGrid(ctx, offsetX, offsetY, scale, canvasWidth, canvasHeight);
 
   for (const linedef of settings.level.linedefs) {
     const startPosition = worldToScreen(

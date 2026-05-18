@@ -37,6 +37,7 @@ const Stage: Component = () => {
         </div>
         <div>
           <Map2d
+            withControls
             width={400}
             height={320}
             settings={settings}

@@ -9,7 +9,7 @@ import { createRender25d } from '../Stage1c/render25d';
 import render25d from '../Stage1d2/render25d';
 import defaultSettings from './settings';
 
-const Stage3: Component = () => {
+const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
 
   useCameraControls<Settings>({ settings, setSettings });
@@ -33,6 +33,7 @@ const Stage3: Component = () => {
          <div>
           <h4 class="flex justify-center text-xl mb-2">Вид сверху</h4>
           <Map2d
+            withControls
             canvasClassName='w-full'
             width={settings().camera.screen.width}
             height={settings().camera.screen.height}
@@ -60,4 +61,4 @@ const Stage3: Component = () => {
   );
 };
 
-export default Stage3;
+export default Stage;

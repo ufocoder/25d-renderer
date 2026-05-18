@@ -2,7 +2,6 @@ import Canvas from "@app/Canvas/CanvasBase";
 import CodeBlock from "@app/components/Code";
 import Map2d from '@app/components/Map2d';
 import RepoLink from "@app/components/RepoLink";
-import { useCameraControls } from '@app/hooks/useCameraControls';
 import render2d from '@app/stages/Stage0a/render2d';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
@@ -40,9 +39,7 @@ const codeSectors = `
 `
 
 const Stage: Component = () => {
-  const [settings, setSettings] = createSignal<Settings>(defaultSettings);
-
-  useCameraControls<Settings>({ settings, setSettings });
+  const [settings] = createSignal<Settings>(defaultSettings);
 
   return (
     <section class="flex flex-col gap-4">

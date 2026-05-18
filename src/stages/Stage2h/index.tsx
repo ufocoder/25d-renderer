@@ -43,8 +43,8 @@ const Stage: Component = () => {
               render={render25d}
             />
           </div>
-          <div class="flex flex-col justify-center">
-            <button class="w-100 bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 border border-blue-700" onClick={() => startAnimation()}>play camera Z axis animation</button>
+          <div class="flex flex-col justify-center items-center">
+            <button class="w-100 bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 border border-blue-700 mb-1" onClick={() => startAnimation()}>play camera Z axis animation</button>
             <button class="w-100 bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 border border-blue-700" onClick={() => stopAnimation()}>stop camera Z axis animation</button>
           </div>
         </div>
@@ -52,6 +52,7 @@ const Stage: Component = () => {
           <h2 class="flex justify-center text-2xl">2D Renderer</h2>
           <div class="flex justify-center">
             <Map2d
+              withControls
               width={400}
               height={320}
               settings={settings}

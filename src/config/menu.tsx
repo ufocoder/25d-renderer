@@ -47,6 +47,7 @@ export const menuGroups: MenuEntry[] = [
       { href: '/stage-1d3', label: 'Отсечение стены #3: окружность' },
       { href: '/stage-1e', label: 'Сортировки стен' },
       { href: '/stage-1f', label: 'Разделение стен' },
+      { href: '/stage-1g', label: 'Демо: собираем уровень' },
     ],
   },
   {
@@ -62,40 +63,45 @@ export const menuGroups: MenuEntry[] = [
       { href: '/stage-2h', label: 'Высота камеры' },
       { href: '/stage-2i', label: 'Порталы 2D: трапеция' },
       { href: '/stage-2j', label: 'Порталы 2D: многоугольник' },
+      { href: '/stage-2k', label: 'Демо: собираем уровень' },
     ],
   },
   {
     title: 'Stage 3: Binary Space Partition',
     links: [
-      { href: '/stage-3a', label: 'Разбитие на подсектора' },
-      { href: '/stage-3b', label: 'Тест: варианты разбития' },
-      { href: '/stage-3c', label: 'Один сектор с геометрией' },
-      { href: '/stage-3d', label: 'Порталы 1D: соединяем сектора' },
-      { href: '/stage-3e', label: 'Порталы 2D: соединяем сектора' },
-      { href: '/stage-3f', label: 'Высота камеры' },
-      { href: '/stage-3g', label: 'Разные высоты секторов' },
+      { href: '/stage-3a', label: 'Отрисова внутреннего сектора' },
+      { href: '/stage-3b', label: 'Разбитие на подсектора' },
+      { href: '/stage-3c', label: 'Тест: варианты разбития' },
+      { href: '/stage-3d', label: 'Один сектор с геометрией' },
+      { href: '/stage-3e', label: 'Порталы 1D: соединяем сектора' },
+      { href: '/stage-3f', label: 'Порталы 2D: соединяем сектора' },
+      { href: '/stage-3g', label: 'Высота камеры' },
+      { href: '/stage-3h', label: 'Разные высоты секторов' },
     ],
   },
   {
     title: 'Stage 4: Улучшаем движение',
     links: [
-      { href: '/stage-4a', label: 'перемещение по лестницам' },
-      { href: '/stage-4b', label: 'коллизиции со стенами' },
-      { href: '/stage-4с', label: 'покачивание камеры' },
+      { href: '/stage-4a', label: 'Учитываем высоту сектора' },
+      { href: '/stage-4b', label: 'Коллизиции со стенами' },
+      { href: '/stage-4c', label: 'Покачивание камеры' },
     ],
   },
   {
     title: 'Stage 5: Текстурирование',
     links: [
-      { href: '/stage-5a', label: 'стены' },
-      { href: '/stage-5b', label: 'пол и потолок' },
-      { href: '/stage-5c', label: 'уровень освещения' },
+      { href: '/stage-5a', label: 'Вертикальное: стены' },
+      { href: '/stage-5b', label: 'Буффер' },
+      { href: '/stage-5c', label: 'Горизонтальное: пол и потолок' },
+      { href: '/stage-5d', label: 'Уровень освещения секторов' },
     ],
   },
   {
     title: 'Stage 6: Прочее',
     links: [
       { href: '/stage-6a', label: 'предметы' },
+      { href: '/stage-6a', label: 'предметы' },
     ],
-  }
+  },
+  { href: '/demo', label: 'Demo' },
 ];

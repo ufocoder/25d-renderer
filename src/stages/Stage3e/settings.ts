@@ -84,11 +84,13 @@ segs1[1].isTwoSide = true
 
 segs2[3].backSector = room1;
 segs2[3].isTwoSide = true;
+segs2[1].backSector = room1;
+segs2[1].isTwoSide = true;
 
-segs3[2].backSector = room4;
-segs3[2].isTwoSide = true;
 segs3[3].backSector = room2;
 segs3[3].isTwoSide = true;
+segs3[2].backSector = room4;
+segs3[2].isTwoSide = true;
 
 segs4[0].backSector = room3;
 segs4[0].isTwoSide = true;

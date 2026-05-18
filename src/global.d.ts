@@ -36,12 +36,12 @@ interface Sector {
   id?: number;
   height?: number; // stage 5b only
   floorHeight?: number;
-  floorColor?: string;
+  floorColor?: string | Color;
   floorTexture?: string;
   ceilHeight?: number;
-  ceilColor?: string;
+  ceilColor?: string | Color;
   ceilTexture?: string;
-  wallColor?: string;
+  wallColor?: string | Color;
   wallTexture?: string;
   segs: Seg[]
 }

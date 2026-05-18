@@ -16,7 +16,7 @@ const Stage: Component = () => {
   return (
     <section class="flex flex-col gap-4">
 
-      <p>TODO</p>
+      <p>Зная координаты вершин стены, достроим вертикальные линии и получим разукрушенные пол и потолок</p>
 
       <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
         <div class="flex flex-col gap-2">
@@ -34,6 +34,7 @@ const Stage: Component = () => {
           <h2 class="flex justify-center text-2xl">2D Renderer</h2>
           <div class="flex justify-center">
             <Map2d
+                withControls
                 width={400}
                 height={320}
                 settings={settings}

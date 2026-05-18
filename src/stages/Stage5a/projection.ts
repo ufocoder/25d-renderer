@@ -1,7 +1,7 @@
 import { Angle, normalizeAngle } from "@app/lib/Angle";
 import type { SegProjection } from "@app/stages/Stage2d/projection";
 
-function toAngle(a: Vertex, b: Vertex): Angle {
+export function toAngle(a: Vertex, b: Vertex): Angle {
   const dx = a.x - b.x;
   const dy = a.y - b.y;
 
@@ -26,7 +26,7 @@ function distanceToSeg(linedef: Seg, camera: Camera): number {
   ) / len;
 }
 
-function angleFromScreenX(screenX: number, camera: Camera): Angle {
+export function angleFromScreenX(screenX: number, camera: Camera): Angle {
   const fov = camera.fov.degrees;
   const centerX = camera.screen.width / 2;
   const angleOffset = ((screenX - centerX) / camera.screen.width) * fov;
@@ -34,7 +34,7 @@ function angleFromScreenX(screenX: number, camera: Camera): Angle {
   return new Angle(angleOffset);
 }
 
-function caclulateScaleFactor(
+export function caclulateScaleFactor(
   screenX: number,
   linedef: Seg,
   camera: Camera

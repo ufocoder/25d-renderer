@@ -4,8 +4,9 @@ import { HashRouter, Route } from '@solidjs/router';
 import type { Component, ParentComponent } from 'solid-js';
 import { createEffect, createSignal } from 'solid-js';
 import { Drawer } from './components/Drawer';
-import { routes } from './routes';
+import { routeElements } from './routes';
 import Welcome from './stages/Welcome';
+import Demo from './stages/Demo';
 
 
 const Layout: ParentComponent = (props) => {
@@ -51,7 +52,8 @@ const App: Component = () => {
   return (
     <HashRouter root={Layout}>
       <Route path="/" component={() => <Welcome />} />
-      {routes}
+      <Route path="/demo" component={() => <Demo />} />
+      {routeElements}
       <Route path="*" component={() => 'Not found'} />
     </HashRouter>
   );

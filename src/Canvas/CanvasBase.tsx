@@ -1,4 +1,4 @@
-import { type Accessor, type Component, createEffect, onMount } from "solid-js";
+import { type Accessor, type Component, createEffect } from "solid-js";
 
 export interface RendererProps {
   render: (ctx: CanvasRenderingContext2D, settings: Settings, ...rest: any) => void | Promise<void>;
@@ -34,10 +34,6 @@ const Renderer: Component<RendererProps> = ({
 
     await render(ctx, settings());
   };
-
-  onMount(() => {
-    tick();
-  });
 
   createEffect(() => {
     tick();

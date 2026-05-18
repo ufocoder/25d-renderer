@@ -2,10 +2,9 @@ import Canvas from "@app/Canvas/CanvasBase";
 import Map2d from '@app/components/Map2d';
 import { useCameraControls } from '@app/hooks/useCameraControls';
 import render2dStage0 from '@app/stages/Stage0a/render2d';
-import render2dStage6 from '@app/stages/Stage3a/renderBSP';
+import render25d from '@app/stages/Stage3d/render25d';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
-import render25d from './render25d';
 import defaultSettings from './settings';
 
 const Stage: Component = () => {
@@ -15,39 +14,34 @@ const Stage: Component = () => {
 
   return (
     <section class="flex flex-col gap-4">
-
-      <div class="grid grid-cols-2 gap-4">
-        <div class="mt-4 flex flex-col">
-          <h2 class="text-2xl">2.5D Renderer</h2>
-        </div>
-        <div class="mb-2 mt-4">
-          <h2 class="text-2xl">2D Renderer</h2>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div class="grid gap-4">
-          <h4 class="text">BSP</h4>
+      
+      <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
+        <div class="flex flex-col gap-2">
+          <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
+          <div class="flex justify-center">
             <Canvas
               settings={settings}
               width={settings().camera.screen.width}
               height={settings().camera.screen.height}
               render={render25d}
             />
+          </div>
         </div>
-        <div>
-          <Map2d
-            width={400}
-            height={320}
-            settings={settings}
-            render={render2dStage0} />
-          <Map2d
-            width={400}
-            height={320}
-            settings={settings}
-            render={render2dStage6} />
+        <div class="flex flex-col gap-2">
+          <h2 class="flex justify-center text-2xl">2D Renderer</h2>
+          <div class="flex justify-center">
+            
+            <Map2d
+              withControls
+              withVertical
+              width={400}
+              height={320}
+              settings={settings}
+              render={render2dStage0} />
+          </div>
         </div>
       </div>
+
     </section>
   );
 };

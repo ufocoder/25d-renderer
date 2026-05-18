@@ -24,6 +24,8 @@ function projectVertexToScreen(camera: Camera, vertex: Vertex) {
 
   const height = WALL_HEIGHT / distance;
 
+  console.log('WALL_HEIGHT', height)
+
   const vertexAngle = angle.degrees;
 
   const cameraAngleFrom = camera.angle.degrees - camera.fov.degrees / 2;

@@ -1,8 +1,9 @@
-import { getPointSide } from "@app/stages/Stage3a//bsp/geometry";
-import { traverseBSPTree } from "@app/stages/Stage3a//bsp/traverse";
-import type { BSPLeaf, BSPNode } from "@app/stages/Stage3a//bsp/typings";
+import { getPointSide } from "@app/stages/Stage3b/bsp/geometry";
+import { traverseBSPTree } from "@app/stages/Stage3b/bsp/traverse";
+import type { BSPLeaf, BSPNode } from "@app/stages/Stage3b/bsp/typings";
 import { calculateIntersectionAngles, projectSegX, projectSegY, type IntersectionAngles } from "./projection";
-import { textures, type Texture } from "./textures";
+import { getTextureColor, textures, type Color } from "./textures";
+
 
 function isPortal(seg: Seg): boolean {
   return Boolean(seg.isTwoSide && seg.backSector && seg.backSector !== seg.frontSector);
@@ -73,33 +74,22 @@ function drawVerticalLine(
   x: number,
   topY: number,
   bottomY: number,
-  color: string
+  color: Color
 ): void {
   if (topY >= bottomY) return;
   
-  ctx.fillStyle = color;
+  ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
   ctx.fillRect(x, topY, 1, bottomY - topY);
 }
 
-function getTextureOffsetX(
-  seg: Seg,
-  camera: Camera,
-  screenX: number,
-  texture: Texture
-): number {
-  
-}
-
-function drawTexturedVerticalLine(
+function drawPixel(
   ctx: CanvasRenderingContext2D,
   x: number,
-  topY: number,
-  bottomY: number,
-  texture: Texture,
-  textureX: number,
-  textureStartY: number
+  y: number,
+  color: Color
 ): void {
-  
+  ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+  ctx.fillRect(x, y, 1, 1);
 }
 
 function createSolidWallRanges(camera: Camera) {
@@ -111,9 +101,17 @@ function createSolidWallRanges(camera: Camera) {
   return ranges;
 }
 
-interface ColumnClip {
-  top: number;
-  bottom: number;
+function getInterpolationFactor(
+  camera: Camera,
+  angles: IntersectionAngles,
+  screenX: number,
+): number {
+  const fov = camera.fov.degrees;
+  const screenWidth = camera.screen.width;
+  const angle = angles.cameraFrom + (screenX / screenWidth) * fov;
+  const t = (angle - angles.linedefFrom) / (angles.linedefTo - angles.linedefFrom);
+  
+  return Math.max(0, Math.min(1, t));
 }
 
 function drawSolidSegment(
@@ -122,20 +120,22 @@ function drawSolidSegment(
   seg: Seg,
   angles: IntersectionAngles, 
   solidWallRanges: SolidSegmentRange[],
-  upperClip: ColumnClip[],
-  lowerClip: ColumnClip[],
+  upperClip: number[],
+  lowerClip: number[],
 ) {
   const sector = seg.frontSector!;
   const wallColor = sector.wallColor!;
+  const wallTexture = sector.wallTexture;
   const floorColor = sector.floorColor!;
   const ceilColor = sector.ceilColor!;
-  const wallTexture = sector.wallTexture ? textures[sector.wallTexture] : null;
 
   const projectionX = projectSegX(camera, angles);
   const projectionY = projectSegY(camera, projectionX, sector, seg);
 
   const xStart = projectionX.start;
   const xEnd = projectionX.end;
+  
+  if (Math.abs(xEnd - xStart) < 0.001) return;
 
   const startTop = projectionY.start.top;
   const startBottom = projectionY.start.bottom;
@@ -146,42 +146,43 @@ function drawSolidSegment(
   const xTo = Math.min(camera.screen.width - 1, Math.ceil(Math.max(xStart, xEnd)));
 
   for (let x = xFrom; x <= xTo; x++) {
-    if (!isWallVisible(x, solidWallRanges)) {
-      continue;
-    }
-
-    const t = (x - xStart) / (xEnd - xStart);
-    const top = startTop + (endTop - startTop) * t;
-    const bottom = startBottom + (endBottom - startBottom) * t;
+    if (!isWallVisible(x, solidWallRanges)) continue;
     
-    const drawTop = Math.max(upperClip[x].top, top);
-    const drawBottom = Math.min(lowerClip[x].bottom, bottom);
+    const tx = getInterpolationFactor(camera, angles, x);
+    const ty = (x - xStart) / (xEnd - xStart);
+    const top = startTop + (endTop - startTop) * ty;
+    const bottom = startBottom + (endBottom - startBottom) * ty;
     
-    if (drawTop >= drawBottom) {
-      continue;
-    }
+    let drawTop = Math.max(upperClip[x], Math.ceil(top));
+    let drawBottom = Math.min(lowerClip[x], Math.floor(bottom));
+    
+    if (drawTop >= drawBottom) continue;
 
-    if (drawTop > upperClip[x].top) {
-      drawVerticalLine(ctx, x, Math.floor(upperClip[x].top), drawTop, ceilColor);
+    if (drawTop > upperClip[x]) {
+      drawVerticalLine(ctx, x, upperClip[x], drawTop, ceilColor);
     }
 
     if (wallTexture) {
-      const textureOffsetX = getTextureOffsetX(seg, camera, x, wallTexture);
-      const textureOffsetY = 0;
-      drawTexturedVerticalLine(
-        ctx, x, drawTop, drawBottom, 
-        wallTexture, textureOffsetX, textureOffsetY
-      );
+      const texture = textures[wallTexture];
+      const texX = Math.floor(tx * texture.width);
+      
+      for (let y = drawTop; y < drawBottom; y++) {
+        const v = (y - top) / (bottom - top);
+        const texY = Math.floor(v * texture.height) % texture.height;        
+        const color = getTextureColor(texture, texX, texY);
+        
+        drawPixel(ctx, x, y, color);
+      }
     } else {
       drawVerticalLine(ctx, x, drawTop, drawBottom, wallColor);
     }
 
-    if (drawBottom < lowerClip[x].bottom) {
-      drawVerticalLine(ctx, x, drawBottom, Math.ceil(lowerClip[x].bottom), floorColor);
+    if (drawBottom < lowerClip[x]) {
+      drawVerticalLine(ctx, x, drawBottom, lowerClip[x], floorColor);
     }
 
-    upperClip[x].top = drawTop;
-    lowerClip[x].bottom = drawBottom;
+    upperClip[x] = drawTop;
+    lowerClip[x] = drawBottom;
   }
 
   addSolidRange(camera, xStart, xEnd, solidWallRanges);
@@ -209,16 +210,13 @@ function drawPortalSegment(
   seg: Seg,
   angles: IntersectionAngles, 
   solidWallRanges: SolidSegmentRange[],
-  upperClip: ColumnClip[],
-  lowerClip: ColumnClip[],
+  upperClip: number[],
+  lowerClip: number[],
 ) {
   const frontSector = seg.frontSector!;
   const backSector = seg.backSector!;
   
   const projectionX = projectSegX(camera, angles);
-  const frontProjectionY = projectSegY(camera, projectionX, frontSector, seg);
-  const backProjectionY = projectSegY(camera, projectionX, backSector, seg);
-
   const xStart = projectionX.start;
   const xEnd = projectionX.end;
   const xFrom = Math.max(0, Math.floor(Math.min(xStart, xEnd)));
@@ -229,7 +227,8 @@ function drawPortalSegment(
   const currentSector = isFront ? frontSector : backSector;
   const otherSector = isFront ? backSector : frontSector;
 
-  const wallTexture = otherSector.wallTexture ? textures[otherSector.wallTexture] : null;
+  const frontProjectionY = projectSegY(camera, projectionX, frontSector, seg);
+  const backProjectionY = projectSegY(camera, projectionX, backSector, seg);
   const portalWallType = getPortalWallType(currentSector, otherSector);
 
   for (let x = xFrom; x <= xTo; x++) {
@@ -237,7 +236,8 @@ function drawPortalSegment(
       continue;
     }
 
-    const t = (x - xStart) / (xEnd - xStart);
+    const ty = (x - xStart) / (xEnd - xStart);
+    const tx = getInterpolationFactor(camera, angles, x);
 
     let frontTop, frontBottom, backTop, backBottom;
 
@@ -247,19 +247,19 @@ function drawPortalSegment(
       backTop = backProjectionY.start.top;
       backBottom = backProjectionY.start.bottom;
     } else {
-      frontTop = frontProjectionY.start.top + (frontProjectionY.end.top - frontProjectionY.start.top) * t;
-      frontBottom = frontProjectionY.start.bottom + (frontProjectionY.end.bottom - frontProjectionY.start.bottom) * t;
-      backTop = backProjectionY.start.top + (backProjectionY.end.top - backProjectionY.start.top) * t;
-      backBottom = backProjectionY.start.bottom + (backProjectionY.end.bottom - backProjectionY.start.bottom) * t;
+      frontTop = frontProjectionY.start.top + (frontProjectionY.end.top - frontProjectionY.start.top) * ty;
+      frontBottom = frontProjectionY.start.bottom + (frontProjectionY.end.bottom - frontProjectionY.start.bottom) * ty;
+      backTop = backProjectionY.start.top + (backProjectionY.end.top - backProjectionY.start.top) * ty;
+      backBottom = backProjectionY.start.bottom + (backProjectionY.end.bottom - backProjectionY.start.bottom) * ty;
     }
 
-    const portalTop = isFront ? frontTop : backTop;
-    const portalBottom = isFront ? frontBottom : backBottom;
-    const otherTop = isFront ? backTop : frontTop;
-    const otherBottom = isFront ? backBottom : frontBottom;
+    const portalTop = Math.ceil(isFront ? frontTop : backTop);
+    const portalBottom = Math.floor(isFront ? frontBottom : backBottom);
+    const otherTop = Math.ceil(isFront ? backTop : frontTop);
+    const otherBottom = Math.floor(isFront ? backBottom : frontBottom);
 
-    const oldTop = upperClip[x].top;
-    const oldBottom = lowerClip[x].bottom;
+    const oldTop = upperClip[x];
+    const oldBottom = lowerClip[x];
 
     const drawTop = Math.max(oldTop, portalTop);
     const drawBottom = Math.min(oldBottom, portalBottom);
@@ -270,66 +270,68 @@ function drawPortalSegment(
 
     if (drawTop > oldTop) {
       drawVerticalLine(ctx, x, Math.floor(oldTop), drawTop, currentSector.ceilColor!);
-      upperClip[x].top = drawTop;
+      upperClip[x] = drawTop;
     }
 
     if (portalWallType === 'upper' || portalWallType === 'both') {
       const wallTop = drawTop;
       const wallBottom = Math.min(drawBottom, Math.max(drawTop, otherTop));
+      const wallTexture = otherSector.wallTexture;
       if (wallTop < wallBottom) {
         if (wallTexture) {
-          const textureOffsetX = getTextureOffsetX(seg, camera, x, wallTexture);
-          const textureOffsetY = 0;
-          drawTexturedVerticalLine(
-            ctx, x, wallTop, wallBottom, 
-            wallTexture, textureOffsetX, textureOffsetY
-          );
+          const texture = textures[wallTexture];
+          const texX = Math.floor(tx * texture.width);
+          const yFrom = Math.max(drawTop, 0);
+          const yTo = Math.min(drawBottom, camera.screen.height);
+          
+          for (let y = yFrom; y < yTo; y++) {
+            const v = (y - portalTop) / (portalBottom - portalTop);
+            const texY = Math.floor(v * texture.height) % texture.height;
+            const color = getTextureColor(texture, texX, texY);
+
+            drawPixel(ctx, x, y, color);
+          }
         } else {
           drawVerticalLine(ctx, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
         }
-        upperClip[x].top = wallBottom;
+        upperClip[x] = wallBottom;
       }
     }
 
     if (portalWallType === 'lower' || portalWallType === 'both') {
       const wallTop = Math.max(drawTop, Math.min(drawBottom, otherBottom));
       const wallBottom = drawBottom;
+      const wallTexture = otherSector.wallTexture;
+
       if (wallTop < wallBottom) {
         if (wallTexture) {
-          const textureOffsetX = getTextureOffsetX(seg, camera, x, wallTexture);
-          const textureOffsetY = 0;
-          drawTexturedVerticalLine(
-            ctx, x, wallTop, wallBottom, 
-            wallTexture, textureOffsetX, textureOffsetY
-          );
+          const texture = textures[wallTexture];
+          const texX = Math.floor(tx * texture.width);
+          const yFrom = Math.max(drawTop, 0);
+          const yTo = Math.min(drawBottom, camera.screen.height);
+          
+          for (let y = yFrom; y < yTo; y++) {
+            const v = (y - portalTop) / (portalBottom - portalTop);
+            const texY = Math.floor(v * texture.height) % texture.height;
+            const color = getTextureColor(texture, texX, texY);
+
+            drawPixel(ctx, x, y, color);
+          }
         } else {
           drawVerticalLine(ctx, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
         }
-        lowerClip[x].bottom = wallTop;
+        lowerClip[x] = wallTop;
       }
     }
 
     if (drawBottom < oldBottom) {
       drawVerticalLine(ctx, x, drawBottom, Math.ceil(oldBottom), currentSector.floorColor!);
-      lowerClip[x].bottom = drawBottom;
+      lowerClip[x] = drawBottom;
     }
 
-    upperClip[x].top = Math.max(upperClip[x].top, Math.max(drawTop, otherTop));
-    lowerClip[x].bottom = Math.min(lowerClip[x].bottom, Math.min(drawBottom, otherBottom));
+    upperClip[x] = Math.max(upperClip[x], Math.max(drawTop, otherTop));
+    lowerClip[x] = Math.min(lowerClip[x], Math.min(drawBottom, otherBottom));
   }
-}
-
-function createColumnClip(camera: Camera): ColumnClip[] {
-  const clips = new Array(camera.screen.width);
-
-  for (let x = 0; x < camera.screen.width; x++) {
-    clips[x] = {
-      top: -1,
-      bottom: camera.screen.height,
-    };
-  }
-
-  return clips;
 }
 
 export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
@@ -339,8 +341,8 @@ export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
   ) {
     const camera = settings.camera;
     const wallRanges = createSolidWallRanges(camera);
-    const upperClip = createColumnClip(camera);
-    const lowerClip = createColumnClip(camera);
+    const upperClip = new Array(camera.screen.width).fill(-1);
+    const lowerClip = new Array(camera.screen.width).fill(camera.screen.height);
 
     traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
       for (const seg of bspNode.segs) {
