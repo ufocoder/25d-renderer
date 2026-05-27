@@ -22,7 +22,7 @@ export function getTextureColor(texture: Texture, x: number, y: number): Color {
 
 export const textures: Record<string, Texture> = {
   ceil: {
-    scale: 0.25,
+    scale: 4,
     width: 4,
     height: 4,
     bitmap: [

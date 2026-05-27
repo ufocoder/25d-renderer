@@ -1,5 +1,5 @@
 import { Angle } from "@app/lib/Angle";
-import type { Color } from "../Stage5a/textures";
+import type { Color } from "./textures";
 
 const colors: Record<string, Color> = {
   "#777": { r: 119, g: 119, b: 119 },

@@ -4,72 +4,57 @@ import { useBspTree } from '@app/stages/Stage3a/hooks/useBspTree';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
 import render2d from "../Stage0a/render2d";
-import { useCameraControlsV3 } from "../Stage4b/hooks/useCameraControls";
 import { createRender25d } from './render25d';
 import defaultSettings from './settings';
-import RepoLink from "@app/components/RepoLink";
+import { useCameraControlsV3 } from "../Stage4b/hooks/useCameraControls";
 import CodeBlock from "@app/components/Code";
+import RepoLink from "@app/components/RepoLink";
+
 
 
 const code1 = `
   interface Sector {
-    // ..
-    wallTexture: string;
+    // ...
+    brightness?: number;
   }
 
 `;
 
 const code2 = `
-  function drawSolidSegment(
-    ctx: CanvasRenderingContext2D,
-    camera: Camera, 
-    seg: Seg,
-    angles: IntersectionAngles, 
-    // ..
-  ) {
-    // ..  
-
-    for (let x = xFrom; x <= xTo; x++) {
-      // ..
-      const tx = getInterpolationFactor(camera, angles, x);
-      // ..
-
-      if (sector.wallTexture) {
-        const texture = textures[sector.wallTexture];
-        const texX = Math.floor(tx * texture.width);
-        
-        for (let y = drawTop; y < drawBottom; y++) {
-          const v = (y - top) / (bottom - top);
-          const texY = Math.floor(v * texture.height) % texture.height;        
-          const color = getTextureColor(texture, texX, texY);
-          
-          drawPixel(ctx, x, y, color);
-        }
-      } else {
-        drawVerticalLine(ctx, x, drawTop, drawBottom, wallColor);
-      }
-      // ..
+  function applyBrightness(color: Color, brightness: number = 1): Color {
+    if (brightness >= 1.0) {
+      return color;
     }
 
+    return {
+      r: Math.min(255, Math.floor(color.r * brightness)),
+      g: Math.min(255, Math.floor(color.g * brightness)),
+      b: Math.min(255, Math.floor(color.b * brightness))
+    };
+  }
+`;
+
+
+const code3 = `
+  function drawTexturedFloorCeil(...) {
+    // ..
+    drawPixel(buffer, x, y, applyBrightness(color, sector.brightness));
+    // ..
+  }
+
+  function drawSolidSegment(...) {
+    // ..
+    drawPixel(buffer, x, y, applyBrightness(color, sector.brightness));
+    // ..
+  }
+
+  function drawPortalSegment(...) {
+    // ..
+    drawPixel(buffer, x, y, applyBrightness(color, otherSector.brightness));
     // ..
   }
 `;
 
-const code3 = `
-  function getInterpolationFactor(
-    camera: Camera,
-    angles: IntersectionAngles,
-    screenX: number,
-  ): number {
-    const fov = camera.fov.degrees;
-    const screenWidth = camera.screen.width;
-    const angle = angles.cameraFrom + (screenX / screenWidth) * fov;
-    const t = (angle - angles.linedefFrom) / (angles.linedefTo - angles.linedefFrom);
-    
-    return Math.max(0, Math.min(1, t));
-  }
-
-`;
 
 const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
@@ -98,31 +83,32 @@ const Stage: Component = () => {
             <Map2d
               withControls
               withVertical
-              initialZoom={50}
-              initialOffsetX={50}
-              initialOffsetY={50}
               settings={settings}
               render={render2d}
             />
           </div>
         </div>
       </div>
+
+      <h2 class="text-2xl">Как это сделать</h2>
       <p class="py-2">
-        Добавим ID текстуры стены в описание сектора
+        Добавим уровень освещенности в описание сектора
       </p>
       <CodeBlock code={code1} lang="ts" />
       <p class="py-2">
-        На примере <code>drawSolidSegment</code> расчитаем координату текстуры для текущей экранной координаты 
+        Опишем очень простую функцию для вычисления уровня освещенности 
       </p>
       <CodeBlock code={code2} lang="ts" />
       <p class="py-2">
-        Где <code>getInterpolationFactor</code>:
+        Теперь достаточно обернуть расчитанные значения цвета пикселей в <code>applyBrightness</code>:
       </p>
       <CodeBlock code={code3} lang="ts" />
-      <p class="my-2">
-        <RepoLink filePath="stages/Stage5b/render25d.ts">Реализация шага на github</RepoLink>
+      <p class="py-2">
+        Как видите это дешевый в реализаци, но довольно яркий эффект.
       </p>
-
+      <p class="my-2">
+        <RepoLink filePath="stages/Stage5e/render25d.ts">Реализация шага на github</RepoLink>
+      </p>
     </section>
   );
 };

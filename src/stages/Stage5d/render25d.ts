@@ -3,7 +3,7 @@ import { getPointSide } from "@app/stages/Stage3b/bsp/geometry";
 import { traverseBSPTree } from "@app/stages/Stage3b/bsp/traverse";
 import type { BSPLeaf, BSPNode } from "@app/stages/Stage3b/bsp/typings";
 import { calculateIntersectionAngles, projectSegX, projectSegY, type IntersectionAngles } from "./projection";
-import { getTextureColor, textures, type Color } from "../Stage5a/textures";
+import { getTextureColor, textures, type Color } from "../Stage5b/textures";
 
 function isPortal(seg: Seg): boolean {
   return Boolean(seg.isTwoSide && seg.backSector && seg.backSector !== seg.frontSector);
@@ -59,11 +59,11 @@ function addSolidRange(
       xEnd: xEnd
     });
   }
-  
+
   for (const segment of result) {
     ranges.push(segment);
   }
-  
+
   ranges.sort((a, b) => a.xStart - b.xStart);
   
   return result;
@@ -77,13 +77,8 @@ function drawVerticalLine(
   color: Color
 ): void {
   if (topY >= bottomY) return;
-  
   for (let y = topY; y < bottomY; y++) {
-    const index = (y * buffer.width + x) * 4;
-    buffer.data[index] = color.r;
-    buffer.data[index + 1] = color.g;
-    buffer.data[index + 2] = color.b;
-    buffer.data[index + 3] = 255;
+    drawPixel(buffer, x, y, color);
   }
 }
 
@@ -142,12 +137,21 @@ function drawTexturedFloorCeil(
   const floorHeight = sector.floorHeight ?? 0;
   const ceilHeight = sector.ceilHeight ?? 0;
 
-  // Расстояние от камеры до плоскости пола/потолка
-  const distToPlane = isFloor 
-    ? cameraZ - floorHeight
-    : ceilHeight - cameraZ;
+  // Расстояние от камеры до плоскости (всегда положительное для корректных лучей)
+  let distToPlane: number;
+  let isLookingUp: boolean; // true для потолка (луч идёт вверх), false для пола (луч идёт вниз)
   
-  if (distToPlane <= 0) return;
+  if (isFloor) {
+    // Пол: камера выше пола
+    distToPlane = cameraZ - floorHeight;
+    isLookingUp = false;
+  } else {
+    // Потолок: камера ниже потолка
+    distToPlane = ceilHeight - cameraZ;
+    isLookingUp = true;
+  }
+  
+  if (distToPlane <= 0.001) return;
 
   const screenHeight = camera.screen.height;
   const screenWidth = camera.screen.width;
@@ -157,47 +161,40 @@ function drawTexturedFloorCeil(
   const dirX = camera.angle.cos;
   const dirY = camera.angle.sin;
   
-  // Векторы для плоскости проекции (правая и левая границы FOV)
+  // Векторы для плоскости проекции
   const planeLength = Math.tan(camera.fov.radians / 2);
   const planeX = -dirY * planeLength;
   const planeY = dirX * planeLength;
   
-  // Размер ячейки текстуры в мировых единицах (2x2 клетки)
-  const textureWorldSize = 2.0;
-  
-  // Для каждой строки пикселей
   for (let y = yStart; y < yEnd && y < screenHeight; y++) {
-    // p - расстояние от центра экрана в пикселях (со знаком)
+    // p - расстояние от центра экрана в пикселях
+    // Y идёт СВЕРХУ ВНИЗ: выше центра → p < 0, ниже центра → p > 0
     const p = y - halfHeight;
     if (Math.abs(p) < 0.001) continue;
     
-    // Расстояние до плоскости вдоль луча
-    const rowDistance = distToPlane / p;
-
-    const angleFromCenter = (x - screenWidth / 2) / screenWidth * camera.fov.radians;
-    const cosCorrection = Math.cos(angleFromCenter);
+    // Определяем, смотрим ли мы в нужную сторону
+    // Для потолка (isLookingUp = true) нужно p < 0 (выше центра)
+    // Для пола (isLookingUp = false) нужно p > 0 (ниже центра)
+    if (isLookingUp && p > 0) continue;
+    if (!isLookingUp && p < 0) continue;
+    
+    // rowDistance всегда положительное, используем abs(p)
+    const rowDistance = distToPlane / Math.abs(p);
     
     // Рассчитываем направление луча для текущего x
-    // t = 0..1 от левого края до правого
     const t = x / screenWidth;
     
     // Луч от левого края (t=0) до правого (t=1)
     const rayDirX = dirX + planeX * (2 * t - 1);
     const rayDirY = dirY + planeY * (2 * t - 1);
     
-    // Нормализуем направление (опционально, для стабильности)
-    const len = Math.hypot(rayDirX, rayDirY);
-    const normX = rayDirX / len;
-    const normY = rayDirY / len;
-    
     // Мировые координаты точки на плоскости
-    const worldX = camera.x + rowDistance * normX / cosCorrection;
-    const worldY = camera.y + rowDistance * normY / cosCorrection;
+    const worldX = camera.x + rayDirX * rowDistance;
+    const worldY = camera.y + rayDirY * rowDistance;
     
-    // Координаты текстуры с учетом размера ячейки (2x2)
-    // Используем остаток от деления, чтобы текстура повторялась
-    let texX = (worldX / textureWorldSize) % 1;
-    let texY = (worldY / textureWorldSize) % 1;
+    // Координаты текстуры с учётом масштаба
+    let texX = (worldX / texture.scale) % 1;
+    let texY = (worldY / texture.scale) % 1;
     
     // Корректировка для отрицательных значений
     if (texX < 0) texX += 1;
@@ -210,16 +207,7 @@ function drawTexturedFloorCeil(
     tx = Math.min(tx, texture.width - 1);
     ty = Math.min(ty, texture.height - 1);
     
-    let color = getTextureColor(texture, tx, ty);
-    
-    // Затемняем пол (опционально)
-    if (isFloor) {
-      color = {
-        r: color.r >> 1,
-        g: color.g >> 1,
-        b: color.b >> 1
-      };
-    }
+    const color = getTextureColor(texture, tx, ty);
     
     drawPixel(imageData, x, y, color);
   }

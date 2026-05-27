@@ -43,6 +43,7 @@ interface Sector {
   ceilTexture?: string;
   wallColor?: string | Color;
   wallTexture?: string;
+  brightness?: number;
   segs: Seg[]
 }
 

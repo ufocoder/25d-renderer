@@ -6,13 +6,13 @@ import { createSignal } from 'solid-js';
 import render2d from "../Stage0a/render2d";
 import { createRender25d } from './render25d';
 import defaultSettings from './settings';
-import { useCameraControlsV2 } from "../Stage4a/hooks/useCameraControls";
+import { useCameraControlsV3 } from "../Stage4b/hooks/useCameraControls";
 
 const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
   const bspTree = useBspTree({ settings });
 
-  useCameraControlsV2({ settings, setSettings, bspTree: bspTree() });
+  useCameraControlsV3({ settings, setSettings, bspTree: bspTree() });
 
   return (
     <section class="flex flex-col gap-4">
@@ -35,16 +35,15 @@ const Stage: Component = () => {
             <Map2d
               withControls
               withVertical
-              initialZoom={0.5}
+              initialZoom={50}
               initialOffsetX={50}
-              initialOffsetY={75}
+              initialOffsetY={50}
               settings={settings}
               render={render2d}
             />
           </div>
         </div>
       </div>
-
     </section>
   );
 };

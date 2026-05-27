@@ -1,50 +1,101 @@
-import Canvas from "@app/Canvas/CanvasBase";
-import Map2d from "@app/components/Map2d";
-import { useBspTree } from '@app/stages/Stage3a/hooks/useBspTree';
+import CodeBlock from '@app/components/Code';
 import type { Component } from 'solid-js';
-import { createSignal } from 'solid-js';
-import render2d from "../Stage0a/render2d";
-import { useCameraControlsV3 } from "../Stage4b/hooks/useCameraControls";
-import { createRender25d } from './render25d';
-import defaultSettings from './settings';
+
+const code1 = `
+  interface Color {
+    r: number
+    g: number
+    b: number
+  }
+
+`;
+const code2 = `
+  type Texture = {
+    width: number;
+    height: number;
+    bitmap: number[][];
+    colors: Color[];
+    scale: number;
+  }
+
+`;
+
+const code3 = `
+  const textures: Record<string, Texture> = {
+    ceil: {
+      scale: 4,
+      width: 4,
+      height: 4,
+      bitmap: [
+        [1, 0, 1, 0],
+        [0, 1, 0, 1],
+        [1, 0, 1, 0],
+        [0, 1, 0, 1],
+      ],
+      colors: [
+        { r: 70, g: 70, b: 70 },
+        { r: 50, g: 50, b: 50 },
+      ],
+    },
+    floor: {
+      scale: 2,
+      width: 4,
+      height: 4,
+      bitmap: [
+        [0, 0, 1, 1],
+        [0, 0, 1, 1],
+        [1, 1, 0, 0],
+        [1, 1, 0, 0],
+      ],
+      colors: [
+        { r: 120, g: 120, b: 120 },
+        { r: 90, g: 90, b: 90 },
+      ],
+    },
+    wall: {
+      scale: 1,
+      width: 8,
+      height: 8,
+      bitmap: [
+        [0, 0, 0, 0, 1, 1, 1, 1],
+        [0, 0, 0, 0, 1, 1, 1, 1],
+        [0, 0, 0, 0, 1, 1, 1, 1],
+        [0, 0, 0, 0, 1, 1, 1, 1],
+        [1, 1, 1, 1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0, 0, 0, 0],
+      ],
+      colors: [
+        { r: 120, g: 200, b: 120 },
+        { r: 200, g: 100, b: 100 },
+      ],
+    },
+  };
+
+`;
 
 const Stage: Component = () => {
-  const [settings, setSettings] = createSignal<Settings>(defaultSettings);
-  const bspTree = useBspTree({ settings });
-
-  useCameraControlsV3({ settings, setSettings, bspTree: bspTree() });
-
   return (
     <section class="flex flex-col gap-4">
-
-      <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
-        <div class="flex flex-col gap-2">
-          <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
-          <div class="flex justify-center">
-            <Canvas
-              settings={settings}
-              width={settings().camera.screen.width}
-              height={settings().camera.screen.height}
-              render={createRender25d({ bspTree: bspTree() })}
-            />
-          </div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <h2 class="flex justify-center text-2xl">2D Renderer</h2>
-          <div class="flex justify-center">
-            <Map2d
-              withControls
-              withVertical
-              initialZoom={50}
-              initialOffsetX={0}
-              initialOffsetY={0}
-              settings={settings}
-              render={render2d}
-            />
-          </div>
-        </div>
-      </div>
-
+      <p class="py-2">
+        В прошлом мы получили уровни состоящие из однотонных стен, пола и потолков, однако в настоящих игрых мы привыкли встречать разнообразные локации, например: лаборатории, пещеры или подземелье или что-то еще. А чтобы создать что-то подобное, необходимо реализовать текстурирование.
+      </p>
+      <p class="py-2">
+        Все цвета будем описывать не в виде строк, а в виде набора трех цветов:
+      </p>
+      <CodeBlock code={code1} lang='ts'/>
+      <p class="py-2">
+        Теперь зададим описание самой текстуры д
+      </p>
+      <CodeBlock code={code2} lang='ts'/>
+      <p class="py-2">
+        Затем определим текстуры для будущего оформления стен, пола и потолка:
+      </p>
+      <CodeBlock code={code3} lang='ts'/>
+      <p class="py-2">
+        В будущем можно будет загружать необходимые изображения и с легкостью представлить их в виде таких же bitmap как выше.
+      </p>
     </section>
   );
 };

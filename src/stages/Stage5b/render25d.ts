@@ -2,7 +2,7 @@ import { getPointSide } from "@app/stages/Stage3b/bsp/geometry";
 import { traverseBSPTree } from "@app/stages/Stage3b/bsp/traverse";
 import type { BSPLeaf, BSPNode } from "@app/stages/Stage3b/bsp/typings";
 import { calculateIntersectionAngles, projectSegX, projectSegY, type IntersectionAngles } from "./projection";
-import { getTextureColor, textures, type Color } from "../Stage5a/textures";
+import { getTextureColor, textures, type Color } from "./textures";
 
 
 function isPortal(seg: Seg): boolean {
@@ -70,7 +70,7 @@ function addSolidRange(
 }
 
 function drawVerticalLine(
-  buffer: ImageData,
+  ctx: CanvasRenderingContext2D,
   x: number,
   topY: number,
   bottomY: number,
@@ -78,27 +78,18 @@ function drawVerticalLine(
 ): void {
   if (topY >= bottomY) return;
   
-  for (let y = topY; y < bottomY; y++) {
-    const index = (y * buffer.width + x) * 4;
-    buffer.data[index] = color.r;
-    buffer.data[index + 1] = color.g;
-    buffer.data[index + 2] = color.b;
-    buffer.data[index + 3] = 255;
-  }
+  ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+  ctx.fillRect(x, topY, 1, bottomY - topY);
 }
 
 function drawPixel(
-  buffer: ImageData,
+  ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   color: Color
 ): void {
-  const index = (y * buffer.width + x) * 4;
-
-  buffer.data[index] = color.r;
-  buffer.data[index + 1] = color.g;
-  buffer.data[index + 2] = color.b;
-  buffer.data[index + 3] = 255;
+  ctx.fillStyle = `rgb(${color.r}, ${color.g}, ${color.b})`;
+  ctx.fillRect(x, y, 1, 1);
 }
 
 function createSolidWallRanges(camera: Camera) {
@@ -124,7 +115,7 @@ function getInterpolationFactor(
 }
 
 function drawSolidSegment(
-  buffer: ImageData,
+  ctx: CanvasRenderingContext2D,
   camera: Camera, 
   seg: Seg,
   angles: IntersectionAngles, 
@@ -153,7 +144,7 @@ function drawSolidSegment(
 
   const xFrom = Math.max(0, Math.floor(Math.min(xStart, xEnd)));
   const xTo = Math.min(camera.screen.width - 1, Math.ceil(Math.max(xStart, xEnd)));
-  
+
   for (let x = xFrom; x <= xTo; x++) {
     if (!isWallVisible(x, solidWallRanges)) continue;
     
@@ -168,7 +159,7 @@ function drawSolidSegment(
     if (drawTop >= drawBottom) continue;
 
     if (drawTop > upperClip[x]) {
-      drawVerticalLine(buffer, x, upperClip[x], drawTop, ceilColor);
+      drawVerticalLine(ctx, x, upperClip[x], drawTop, ceilColor);
     }
 
     if (wallTexture) {
@@ -179,15 +170,15 @@ function drawSolidSegment(
         const v = (y - top) / (bottom - top);
         const texY = Math.floor(v * texture.height) % texture.height;        
         const color = getTextureColor(texture, texX, texY);
-
-        drawPixel(buffer, x, y, color);
+        
+        drawPixel(ctx, x, y, color);
       }
     } else {
-      drawVerticalLine(buffer, x, drawTop, drawBottom, wallColor);
+      drawVerticalLine(ctx, x, drawTop, drawBottom, wallColor);
     }
 
     if (drawBottom < lowerClip[x]) {
-      drawVerticalLine(buffer, x, drawBottom, lowerClip[x], floorColor);
+      drawVerticalLine(ctx, x, drawBottom, lowerClip[x], floorColor);
     }
 
     upperClip[x] = drawTop;
@@ -214,7 +205,7 @@ function getPortalWallType(currentSector: Sector, otherSector: Sector): PortalWa
 }
 
 function drawPortalSegment(
-  buffer: ImageData,
+  ctx: CanvasRenderingContext2D,
   camera: Camera, 
   seg: Seg,
   angles: IntersectionAngles, 
@@ -278,7 +269,7 @@ function drawPortalSegment(
     }
 
     if (drawTop > oldTop) {
-      drawVerticalLine(buffer, x, Math.floor(oldTop), drawTop, currentSector.ceilColor!);
+      drawVerticalLine(ctx, x, Math.floor(oldTop), drawTop, currentSector.ceilColor!);
       upperClip[x] = drawTop;
     }
 
@@ -298,10 +289,10 @@ function drawPortalSegment(
             const texY = Math.floor(v * texture.height) % texture.height;
             const color = getTextureColor(texture, texX, texY);
 
-            drawPixel(buffer, x, y, color);
+            drawPixel(ctx, x, y, color);
           }
         } else {
-          drawVerticalLine(buffer, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
+          drawVerticalLine(ctx, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
         }
         upperClip[x] = wallBottom;
       }
@@ -324,17 +315,17 @@ function drawPortalSegment(
             const texY = Math.floor(v * texture.height) % texture.height;
             const color = getTextureColor(texture, texX, texY);
 
-            drawPixel(buffer, x, y, color);
+            drawPixel(ctx, x, y, color);
           }
         } else {
-          drawVerticalLine(buffer, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
+          drawVerticalLine(ctx, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
         }
         lowerClip[x] = wallTop;
       }
     }
 
     if (drawBottom < oldBottom) {
-      drawVerticalLine(buffer, x, drawBottom, Math.ceil(oldBottom), currentSector.floorColor!);
+      drawVerticalLine(ctx, x, drawBottom, Math.ceil(oldBottom), currentSector.floorColor!);
       lowerClip[x] = drawBottom;
     }
 
@@ -349,15 +340,6 @@ export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
     settings: Settings,
   ) {
     const camera = settings.camera;
-    const buffer = ctx.createImageData(camera.screen.width, camera.screen.height);
-
-    for (let i = 0; i < buffer.data.length; i += 4) {
-      buffer.data[i] = 0
-      buffer.data[i + 1] = 0
-      buffer.data[i + 2] = 0
-      buffer.data[i + 3] = 255
-    }
-
     const wallRanges = createSolidWallRanges(camera);
     const upperClip = new Array(camera.screen.width).fill(-1);
     const lowerClip = new Array(camera.screen.width).fill(camera.screen.height);
@@ -371,13 +353,11 @@ export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
         }
 
         if (isPortal(seg)) {
-          drawPortalSegment(buffer, camera, seg, angles, wallRanges, upperClip, lowerClip);
+          drawPortalSegment(ctx, camera, seg, angles, wallRanges, upperClip, lowerClip);
         } else {
-          drawSolidSegment(buffer, camera, seg, angles, wallRanges, upperClip, lowerClip);
+          drawSolidSegment(ctx, camera, seg, angles, wallRanges, upperClip, lowerClip);
         }
       }
     });
-
-    ctx.putImageData(buffer, 0, 0);
   }
 }

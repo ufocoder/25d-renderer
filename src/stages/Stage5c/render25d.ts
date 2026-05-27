@@ -1,9 +1,9 @@
-
 import { getPointSide } from "@app/stages/Stage3b/bsp/geometry";
 import { traverseBSPTree } from "@app/stages/Stage3b/bsp/traverse";
 import type { BSPLeaf, BSPNode } from "@app/stages/Stage3b/bsp/typings";
 import { calculateIntersectionAngles, projectSegX, projectSegY, type IntersectionAngles } from "./projection";
-import { getTextureColor, textures, type Color } from "../Stage5a/textures";
+import { getTextureColor, textures, type Color } from "../Stage5b/textures";
+
 
 function isPortal(seg: Seg): boolean {
   return Boolean(seg.isTwoSide && seg.backSector && seg.backSector !== seg.frontSector);
@@ -59,11 +59,11 @@ function addSolidRange(
       xEnd: xEnd
     });
   }
-
+  
   for (const segment of result) {
     ranges.push(segment);
   }
-
+  
   ranges.sort((a, b) => a.xStart - b.xStart);
   
   return result;
@@ -77,14 +77,8 @@ function drawVerticalLine(
   color: Color
 ): void {
   if (topY >= bottomY) return;
-  
   for (let y = topY; y < bottomY; y++) {
-    const index = (y * buffer.width + x) * 4;
-
-    buffer.data[index] = color.r;
-    buffer.data[index + 1] = color.g;
-    buffer.data[index + 2] = color.b;
-    buffer.data[index + 3] = 255;
+    drawPixel(buffer, x, y, color);
   }
 }
 
@@ -122,101 +116,6 @@ function getInterpolationFactor(
   const t = (angle - angles.linedefFrom) / (angles.linedefTo - angles.linedefFrom);
   
   return Math.max(0, Math.min(1, t));
-}
-
-function drawTexturedFloorCeil(
-  imageData: ImageData,
-  camera: Camera,
-  sector: Sector,
-  x: number,
-  yStart: number,
-  yEnd: number,
-  isFloor: boolean
-): void {
-  const textureName = isFloor ? sector.floorTexture : sector.ceilTexture;
-  if (!textureName) return;
-  
-  const texture = textures[textureName];
-  if (!texture) return;
-
-  const cameraZ = camera.z ?? 0;
-  const floorHeight = sector.floorHeight ?? 0;
-  const ceilHeight = sector.ceilHeight ?? 0;
-
-  // Расстояние от камеры до плоскости (всегда положительное для корректных лучей)
-  let distToPlane: number;
-  let isLookingUp: boolean; // true для потолка (луч идёт вверх), false для пола (луч идёт вниз)
-  
-  if (isFloor) {
-    // Пол: камера выше пола
-    distToPlane = cameraZ - floorHeight;
-    isLookingUp = false;
-  } else {
-    // Потолок: камера ниже потолка
-    distToPlane = ceilHeight - cameraZ;
-    isLookingUp = true;
-  }
-  
-  if (distToPlane <= 0.001) return;
-
-  const screenHeight = camera.screen.height;
-  const screenWidth = camera.screen.width;
-  const halfHeight = screenHeight / 2;
-  
-  // Направление взгляда
-  const dirX = camera.angle.cos;
-  const dirY = camera.angle.sin;
-  
-  // Векторы для плоскости проекции
-  const planeLength = Math.tan(camera.fov.radians / 2);
-  const planeX = -dirY * planeLength;
-  const planeY = dirX * planeLength;
-  
-  for (let y = yStart; y < yEnd && y < screenHeight; y++) {
-    // p - расстояние от центра экрана в пикселях
-    // Y идёт СВЕРХУ ВНИЗ: выше центра → p < 0, ниже центра → p > 0
-    const p = y - halfHeight;
-    if (Math.abs(p) < 0.001) continue;
-    
-    // Определяем, смотрим ли мы в нужную сторону
-    // Для потолка (isLookingUp = true) нужно p < 0 (выше центра)
-    // Для пола (isLookingUp = false) нужно p > 0 (ниже центра)
-    if (isLookingUp && p > 0) continue;
-    if (!isLookingUp && p < 0) continue;
-    
-    // rowDistance всегда положительное, используем abs(p)
-    const rowDistance = distToPlane / Math.abs(p);
-    
-    // Рассчитываем направление луча для текущего x
-    const t = x / screenWidth;
-    
-    // Луч от левого края (t=0) до правого (t=1)
-    const rayDirX = dirX + planeX * (2 * t - 1);
-    const rayDirY = dirY + planeY * (2 * t - 1);
-    
-    // Мировые координаты точки на плоскости
-    const worldX = camera.x + rayDirX * rowDistance;
-    const worldY = camera.y + rayDirY * rowDistance;
-    
-    // Координаты текстуры с учётом масштаба
-    let texX = (worldX / texture.scale) % 1;
-    let texY = (worldY / texture.scale) % 1;
-    
-    // Корректировка для отрицательных значений
-    if (texX < 0) texX += 1;
-    if (texY < 0) texY += 1;
-    
-    // Преобразуем в пиксельные координаты текстуры
-    let tx = Math.floor(texX * texture.width);
-    let ty = Math.floor(texY * texture.height);
-    
-    tx = Math.min(tx, texture.width - 1);
-    ty = Math.min(ty, texture.height - 1);
-    
-    const color = getTextureColor(texture, tx, ty);
-    
-    drawPixel(imageData, x, y, color);
-  }
 }
 
 function drawSolidSegment(
@@ -264,11 +163,7 @@ function drawSolidSegment(
     if (drawTop >= drawBottom) continue;
 
     if (drawTop > upperClip[x]) {
-      if (sector.ceilTexture) {
-        drawTexturedFloorCeil(buffer, camera, sector, x, upperClip[x], drawTop, false);
-      } else {
-        drawVerticalLine(buffer, x, upperClip[x], drawTop, ceilColor);
-      }
+      drawVerticalLine(buffer, x, upperClip[x], drawTop, ceilColor);
     }
 
     if (wallTexture) {
@@ -279,7 +174,7 @@ function drawSolidSegment(
         const v = (y - top) / (bottom - top);
         const texY = Math.floor(v * texture.height) % texture.height;        
         const color = getTextureColor(texture, texX, texY);
-        
+
         drawPixel(buffer, x, y, color);
       }
     } else {
@@ -287,11 +182,7 @@ function drawSolidSegment(
     }
 
     if (drawBottom < lowerClip[x]) {
-      if (sector.floorTexture) {
-        drawTexturedFloorCeil(buffer, camera, sector, x, drawBottom, lowerClip[x], true);
-      } else {
-        drawVerticalLine(buffer, x, drawBottom, lowerClip[x], floorColor);
-      }
+      drawVerticalLine(buffer, x, drawBottom, lowerClip[x], floorColor);
     }
 
     upperClip[x] = drawTop;
@@ -382,11 +273,7 @@ function drawPortalSegment(
     }
 
     if (drawTop > oldTop) {
-      if (currentSector.ceilTexture) {
-        drawTexturedFloorCeil(buffer, camera, currentSector, x, oldTop, drawTop, false);
-      } else {
-        drawVerticalLine(buffer, x, Math.floor(oldTop), drawTop, currentSector.ceilColor!);
-      }
+      drawVerticalLine(buffer, x, Math.floor(oldTop), drawTop, currentSector.ceilColor!);
       upperClip[x] = drawTop;
     }
 
@@ -405,6 +292,7 @@ function drawPortalSegment(
             const v = (y - portalTop) / (portalBottom - portalTop);
             const texY = Math.floor(v * texture.height) % texture.height;
             const color = getTextureColor(texture, texX, texY);
+
             drawPixel(buffer, x, y, color);
           }
         } else {
@@ -430,6 +318,7 @@ function drawPortalSegment(
             const v = (y - portalTop) / (portalBottom - portalTop);
             const texY = Math.floor(v * texture.height) % texture.height;
             const color = getTextureColor(texture, texX, texY);
+
             drawPixel(buffer, x, y, color);
           }
         } else {
@@ -440,11 +329,7 @@ function drawPortalSegment(
     }
 
     if (drawBottom < oldBottom) {
-      if (currentSector.floorTexture) {
-        drawTexturedFloorCeil(buffer, camera, currentSector, x, drawBottom, oldBottom, true);
-      } else {
-        drawVerticalLine(buffer, x, drawBottom, Math.ceil(oldBottom), currentSector.floorColor!);
-      }
+      drawVerticalLine(buffer, x, drawBottom, Math.ceil(oldBottom), currentSector.floorColor!);
       lowerClip[x] = drawBottom;
     }
 
@@ -462,17 +347,15 @@ export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
     const buffer = ctx.createImageData(camera.screen.width, camera.screen.height);
 
     for (let i = 0; i < buffer.data.length; i += 4) {
-      buffer.data[i] = 0;
-      buffer.data[i + 1] = 0;
-      buffer.data[i + 2] = 0;
-      buffer.data[i + 3] = 255;
+      buffer.data[i] = 0
+      buffer.data[i + 1] = 0
+      buffer.data[i + 2] = 0
+      buffer.data[i + 3] = 255
     }
 
     const wallRanges = createSolidWallRanges(camera);
     const upperClip = new Array(camera.screen.width).fill(-1);
     const lowerClip = new Array(camera.screen.width).fill(camera.screen.height);
-
-    console.log(camera.x, camera.y, camera.height, camera.z)
 
     traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
       for (const seg of bspNode.segs) {
@@ -491,5 +374,5 @@ export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
     });
 
     ctx.putImageData(buffer, 0, 0);
-  };
+  }
 }

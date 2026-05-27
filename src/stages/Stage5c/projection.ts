@@ -162,7 +162,7 @@ export function projectSegX(camera: Camera, angles: IntersectionAngles): Project
   };
 }
 
-export interface ProjectionScreenY {
+interface ProjectionScreenY {
   start: {
     top: number;
     bottom: number;

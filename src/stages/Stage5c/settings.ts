@@ -1,5 +1,5 @@
 import { Angle } from "@app/lib/Angle";
-import type { Color } from "../Stage5a/textures";
+import type { Color } from "../Stage5b/textures";
 
 const colors: Record<string, Color> = {
   "#777": { r: 119, g: 119, b: 119 },
@@ -15,7 +15,7 @@ const camera: Camera = {
   z: 200,
   height: 200,
   fov: new Angle(45),
-  angle: new Angle(90),
+  angle: new Angle(45),
   screen: {
     width: 400,
     height: 320,
@@ -32,7 +32,6 @@ const roomSector: Sector = {
   floorTexture: 'floor',
   ceilHeight: 400,
   ceilColor: colors["#999"],
-  ceilTexture: 'ceil',
   wallColor: colors["#333"],
   wallTexture: 'wall',
   segs: []

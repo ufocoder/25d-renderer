@@ -34,7 +34,7 @@ export function angleFromScreenX(screenX: number, camera: Camera): Angle {
   return new Angle(angleOffset);
 }
 
-function caclulateScaleFactor(
+export function caclulateScaleFactor(
   screenX: number,
   linedef: Seg,
   camera: Camera

@@ -90,10 +90,11 @@ export const menuGroups: MenuEntry[] = [
   {
     title: 'Stage 5: Текстурирование',
     links: [
-      { href: '/stage-5a', label: 'Вертикальное: стены' },
-      { href: '/stage-5b', label: 'Буффер' },
-      { href: '/stage-5c', label: 'Горизонтальное: пол и потолок' },
-      { href: '/stage-5d', label: 'Уровень освещения секторов' },
+      { href: '/stage-5a', label: 'Текстуры' },
+      { href: '/stage-5b', label: 'Вертикальное: стены' },
+      { href: '/stage-5c', label: 'Буффер' },
+      { href: '/stage-5d', label: 'Горизонтальное: пол и потолок' },
+      { href: '/stage-5e', label: 'Уровень освещения секторов' },
     ],
   },
   {

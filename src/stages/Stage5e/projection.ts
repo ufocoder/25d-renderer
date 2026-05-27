@@ -34,7 +34,7 @@ export function angleFromScreenX(screenX: number, camera: Camera): Angle {
   return new Angle(angleOffset);
 }
 
-export function caclulateScaleFactor(
+function caclulateScaleFactor(
   screenX: number,
   linedef: Seg,
   camera: Camera
@@ -162,7 +162,7 @@ export function projectSegX(camera: Camera, angles: IntersectionAngles): Project
   };
 }
 
-interface ProjectionScreenY {
+export interface ProjectionScreenY {
   start: {
     top: number;
     bottom: number;
