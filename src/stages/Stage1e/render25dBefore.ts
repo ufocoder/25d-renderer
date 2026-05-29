@@ -3,6 +3,23 @@ import { drawPolygon } from "@app/lib/canvas";
 
 const WALL_HEIGHT = 40_000;
 
+const colors: string[] = [
+  '#FF9500',
+  '#FFCC00',
+  '#34C759',
+  '#00C7BE',
+  '#5AC8FA',
+  '#FF3B30',
+  '#007AFF',
+  '#AF52DE',
+  '#FF2D55',
+  '#A2845E',
+];
+
+function gerenateColor(index: number) {
+  return colors[index % colors.length];
+}
+
 function toAngle(a: Vertex, b: Vertex): Angle {
   const dx = a.x - b.x;
   const dy = a.y - b.y;
@@ -190,7 +207,7 @@ export default function render25d(
   settings: Settings,
 ) {
   const camera = settings.camera;
-
+  let colorIndex = 0;
   for (const linedef of settings.level.linedefs) {
     const projection = projectLinedef(camera, linedef);
 
@@ -198,6 +215,6 @@ export default function render25d(
       continue;
     }
     
-    drawPolygon(ctx, projectionToPoints(camera, projection));
+    drawPolygon(ctx, projectionToPoints(camera, projection), gerenateColor(colorIndex++));
   }
 }

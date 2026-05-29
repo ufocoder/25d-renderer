@@ -32,8 +32,8 @@ export const menuGroups: MenuEntry[] = [
   { 
     title: 'Stage 0: Введение',
     links: [
-      { href: '/stage-0a', label: 'Двумерная карта' },
-      { href: '/stage-0b', label: 'Почему (не) WAD файл' },
+      { href: '/stage-0a', label: 'Почему (не) WAD файл' },
+      { href: '/stage-0b', label: 'Двумерная карта' },
     ]
   },
   {
@@ -42,10 +42,10 @@ export const menuGroups: MenuEntry[] = [
       { href: '/stage-1a', label: 'Проекция вершин' },
       { href: '/stage-1b', label: 'Проекция стены' },
       { href: '/stage-1c', label: 'Проблема Fish eye' },
-      { href: '/stage-1d1', label: 'Отсечение стены #1: ряд стен' },
-      { href: '/stage-1d2', label: 'Отсечение стены #2: корридор' },
-      { href: '/stage-1d3', label: 'Отсечение стены #3: окружность' },
-      { href: '/stage-1e', label: 'Сортировки стен' },
+      { href: '/stage-1d1', label: 'Отсечение: полярные координаты и интерполяция' },
+      { href: '/stage-1d2', label: 'Отсечение: учитываем угол камеры' },
+      { href: '/stage-1d3', label: 'Отсечение: финальный тест' },
+      { href: '/stage-1e', label: 'Алгоритм художника' },
       { href: '/stage-1f', label: 'Разделение стен' },
       { href: '/stage-1g', label: 'Демо: собираем уровень' },
     ],
@@ -97,12 +97,13 @@ export const menuGroups: MenuEntry[] = [
       { href: '/stage-5e', label: 'Уровень освещения секторов' },
     ],
   },
+  /*
   {
     title: 'Stage 6: Прочее',
     links: [
-      { href: '/stage-6a', label: 'предметы' },
-      { href: '/stage-6a', label: 'предметы' },
+      { href: '/stage-6a', label: 'Предметы' },
     ],
   },
+  */
   { href: '/demo', label: 'Demo' },
 ];

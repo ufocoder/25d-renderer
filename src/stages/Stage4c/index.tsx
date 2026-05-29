@@ -4,7 +4,7 @@ import { useBspTree } from '@app/stages/Stage3a/hooks/useBspTree';
 import { createRender25d } from '@app/stages/Stage4a//render25d';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
-import render2d from "../Stage0a/render2d";
+import render2d from "../Stage0b/render2d";
 import { useCameraControlsV4 } from './hooks/useCameraControls';
 import defaultSettings from './settings';
 

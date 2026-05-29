@@ -105,6 +105,31 @@ function createSolidWallRanges(camera: Camera) {
   return ranges;
 }
 
+function drawVisSprite(
+    buffer: ImageData,
+    vsprite: VisSprite
+): void {
+    const { item, x1, x2, y1, y2, distance } = vsprite;
+    
+    if (distance < 0.1 || x1 >= x2 || y1 >= y2) return;
+    
+    // Выбираем цвет в зависимости от типа предмета
+    let color: Color;
+    switch (item.type) {
+        case 'health': color = { r: 255, g: 0, b: 0 }; break;
+        case 'weapon': color = { r: 255, g: 255, b: 0 }; break;
+        case 'ammo': color = { r: 255, g: 165, b: 0 }; break;
+        default: color = { r: 255, g: 255, b: 255 };
+    }
+    
+    // Рисуем прямоугольник
+    for (let x = x1; x < x2; x++) {
+        for (let y = y1; y < y2; y++) {
+            drawPixel(buffer, x, y, color);
+        }
+    }
+}
+
 function getInterpolationFactor(
   camera: Camera,
   angles: IntersectionAngles,
@@ -116,6 +141,18 @@ function getInterpolationFactor(
   const t = (angle - angles.linedefFrom) / (angles.linedefTo - angles.linedefFrom);
   
   return Math.max(0, Math.min(1, t));
+}
+
+function applyBrightness(color: Color, brightness: number = 1): Color {
+  if (brightness >= 1.0) {
+    return color;
+  }
+
+  return {
+    r: Math.min(255, Math.floor(color.r * brightness)),
+    g: Math.min(255, Math.floor(color.g * brightness)),
+    b: Math.min(255, Math.floor(color.b * brightness))
+  };
 }
 
 function drawTexturedFloorCeil(
@@ -208,8 +245,8 @@ function drawTexturedFloorCeil(
     ty = Math.min(ty, texture.height - 1);
     
     const color = getTextureColor(texture, tx, ty);
-    
-    drawPixel(imageData, x, y, color);
+
+    drawPixel(imageData, x, y, applyBrightness(color, sector.brightness));
   }
 }
 
@@ -274,7 +311,7 @@ function drawSolidSegment(
         const texY = Math.floor(v * texture.height) % texture.height;        
         const color = getTextureColor(texture, texX, texY);
         
-        drawPixel(buffer, x, y, color);
+        drawPixel(buffer, x, y, applyBrightness(color, sector.brightness));
       }
     } else {
       drawVerticalLine(buffer, x, drawTop, drawBottom, wallColor);
@@ -399,7 +436,7 @@ function drawPortalSegment(
             const v = (y - portalTop) / (portalBottom - portalTop);
             const texY = Math.floor(v * texture.height) % texture.height;
             const color = getTextureColor(texture, texX, texY);
-            drawPixel(buffer, x, y, color);
+            drawPixel(buffer, x, y, applyBrightness(color, otherSector.brightness));
           }
         } else {
           drawVerticalLine(buffer, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
@@ -424,7 +461,7 @@ function drawPortalSegment(
             const v = (y - portalTop) / (portalBottom - portalTop);
             const texY = Math.floor(v * texture.height) % texture.height;
             const color = getTextureColor(texture, texX, texY);
-            drawPixel(buffer, x, y, color);
+            drawPixel(buffer, x, y, applyBrightness(color, otherSector.brightness));
           }
         } else {
           drawVerticalLine(buffer, x, Math.floor(wallTop), Math.ceil(wallBottom), otherSector.wallColor!);
@@ -447,6 +484,81 @@ function drawPortalSegment(
   }
 }
 
+interface VisSprite {
+    item: Item;
+    sector: Sector;
+    x1: number;
+    x2: number;
+    y1: number;  // добавить
+    y2: number;  // добавить
+    distance: number;
+    floorHeight: number;
+    screenX: number;
+}
+
+function calculateItemScreenX(camera: Camera, item: Item): { screenX: number; distance: number; relativeAngle: number } | null {
+    const dx = item.x - camera.x;
+    const dy = item.y - camera.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance < 0.1) return null;
+    
+    const angleToItem = Math.atan2(dy, dx) * 180 / Math.PI;
+    let relativeAngle = angleToItem - camera.angle.degrees;
+    
+    while (relativeAngle > 180) relativeAngle -= 360;
+    while (relativeAngle < -180) relativeAngle += 360;
+    
+    const halfFov = camera.fov.degrees / 2;
+    if (Math.abs(relativeAngle) > halfFov + 10) return null;
+    
+    const screenX = (relativeAngle / camera.fov.degrees) * camera.screen.width + camera.screen.width / 2;
+    if (screenX < 0 || screenX >= camera.screen.width) return null;
+    
+    return { screenX, distance, relativeAngle };
+}
+
+// Добавьте новую функцию для вычисления полных границ спрайта
+function calculateItemBounds(camera: Camera, item: Item, sector: Sector): VisSprite | null {
+    const result = calculateItemScreenX(camera, item);
+    if (!result) return null;
+    
+    const { screenX, distance } = result;
+    
+    // Размер спрайта на экране (как в drawSolidSegment)
+    const scale = camera.screen.height / distance;
+    const spriteWorldSize = 40;
+    const screenSpriteSize = scale * spriteWorldSize * 0.5;
+    
+    // Проекция Y (как для верха и низа стены)
+    const itemBottomZ = (sector.floorHeight || 0) + (item.z || 0);
+    const itemTopZ = itemBottomZ + spriteWorldSize;
+    const cameraZ = camera.z || 0;
+    
+    // Формула из projectSegY
+    const viewCenter = camera.screen.height / 2;
+    const screenBottomY = viewCenter - (itemBottomZ - cameraZ) * scale;
+    const screenTopY = viewCenter - (itemTopZ - cameraZ) * scale;
+    
+    const x1 = Math.max(0, Math.floor(screenX - screenSpriteSize));
+    const x2 = Math.min(camera.screen.width, Math.ceil(screenX + screenSpriteSize));
+    const y1 = Math.max(0, Math.floor(screenTopY));
+    const y2 = Math.min(camera.screen.height, Math.ceil(screenBottomY));
+    
+    return {
+        item,
+        sector,
+        x1,
+        x2,
+        y1,
+        y2,
+        distance,
+        floorHeight: sector.floorHeight ?? 0,
+        screenX
+    };
+}
+
+
 export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
   return function render25d(
     ctx: CanvasRenderingContext2D,
@@ -465,6 +577,7 @@ export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
     const wallRanges = createSolidWallRanges(camera);
     const upperClip = new Array(camera.screen.width).fill(-1);
     const lowerClip = new Array(camera.screen.width).fill(camera.screen.height);
+    const vissprites: VisSprite[] = [];
 
     traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
       for (const seg of bspNode.segs) {
@@ -479,8 +592,23 @@ export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
         } else {
           drawSolidSegment(buffer, camera, seg, angles, wallRanges, upperClip, lowerClip);
         }
+
+        if (seg.frontSector?.items) {
+          for (const item of seg.frontSector.items) {
+            const vsprite = calculateItemBounds(camera, item, seg.frontSector);
+            if (vsprite) {
+                vissprites.push(vsprite);
+            }
+          }
+        }
       }
     });
+
+    vissprites.sort((a, b) => b.distance - a.distance);
+
+    for (const vsprite of vissprites) {
+      drawVisSprite(buffer, vsprite);
+    }
 
     ctx.putImageData(buffer, 0, 0);
   };

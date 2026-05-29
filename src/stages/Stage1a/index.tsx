@@ -4,11 +4,31 @@ import Map2d from '@app/components/Map2d';
 import RepoLink from '@app/components/RepoLink';
 import Content from '@app/components/Сontent';
 import { useCameraControls } from '@app/hooks/useCameraControls';
-import render2d from '@app/stages/Stage0a/render2d';
+import render2d from '@app/stages/Stage0b/render2d';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
 import render25d from './render25d';
 import defaultSettings from './settings';
+import CodeBlock from "@app/components/Code";
+
+
+const code1 = `
+  function render25d(ctx: CanvasRenderingContext2D, settings: Settings) {
+    const camera = settings.camera;
+    for (const linedef of settings.level.linedefs) {
+      for (const vertex of [linedef.start, linedef.end]) {
+        const screenX = projectVertexToScreen(vertex, camera);
+        if (screenX == null) {
+          continue;
+        }
+        ctx.fillStyle = "black";
+        ctx.fillRect(screenX, 0, 1, screen.height);
+      }
+    }
+  }
+
+
+`;
 
 const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
@@ -17,9 +37,11 @@ const Stage: Component = () => {
 
   return (
     <section class="flex flex-col gap-4">
-      <p class="text">Проекция вершины на камеру в виде вертикальной линии</p>
+      <p class="py-2 text">
+        Проекция вершины на камеру в виде вертикальной линии
+      </p>
 
-      <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
+      <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
         <div class="flex flex-col gap-2">
           <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
           <div class="flex justify-center">
@@ -45,7 +67,7 @@ const Stage: Component = () => {
 
       <h2 class="text-2xl">Как это рассчитать</h2>
 
-      <p>
+      <p class="py-2 text">
         Введем условные обозначения:
       </p>
 
@@ -57,7 +79,7 @@ const Stage: Component = () => {
         <Formula latex="W \text{ — ширина экрана в пикселях}" />
       </Content>
 
-      <p class="text">
+      <p class="py-2 text">
         Вычисляем угол между направлением камеры и вершиной на карте
       </p>
 
@@ -65,7 +87,7 @@ const Stage: Component = () => {
           <Formula latex="\theta_v = \operatorname{arctan2}(\Delta y, \Delta x) \cdot \frac{180}{\pi}" />
       </Content>
 
-      <p class="text">
+      <p class="py-2 text">
         Если угол входит в поле обзора камеры, мы линейно преобразуем его относительное положение внутри FOV в координату X на экране
       </p>
       
@@ -74,9 +96,16 @@ const Stage: Component = () => {
         <Formula latex="\text{screenX} = \frac{\theta_v - \theta_{\text{min}}}{\theta_{\text{fov}}} \cdot W" /> 
       </Content>
 
-      <p class="my-2">
+      <p class="py-2 text">
         <RepoLink filePath="stages/Stage1a/render25d.ts">Реализация шага на github</RepoLink>
       </p>
+
+      <h2 class="text-2xl">Немного кода</h2>
+      <p class="py-2 text">
+        Сейчас получившийся мир для нас это множество спроекцированных точек в виде верткальных линий:
+      </p>
+      <CodeBlock code={code1} lang="ts" />
+
     </section>
   );
 };

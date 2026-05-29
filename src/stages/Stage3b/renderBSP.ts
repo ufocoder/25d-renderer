@@ -99,15 +99,11 @@ export default async function render2d(ctx: CanvasRenderingContext2D, settings: 
   const allSegments = settings.level.linedefs;
 
   const onSplitDebug = async (data: any) => {
-    
-    ctx.clearRect(0,0,1000,1000); 
 
     ctx.strokeStyle = '2px'
     drawLinedef(ctx, data.splitter, 'green', 5);
 
     await wait(2_000);
-
-    ctx.clearRect(0,0,1000,1000); 
 
     for (const linedef of data.frontSegs) {
       drawLinedef(ctx, scaleLinedef(linedef, scale), 'red', 5);
@@ -118,9 +114,8 @@ export default async function render2d(ctx: CanvasRenderingContext2D, settings: 
     }
 
     await wait(2_000);
-    ctx.clearRect(0,0,1000,1000); 
 
-    drawBSPnodeBBox(ctx, data.frontSegs, scale, order);
+    //drawBSPnodeBBox(ctx, data.frontSegs, scale, order);
     drawBSPnodeBBox(ctx, data.backSegs, scale, ++order);
 
     await wait(2_000);

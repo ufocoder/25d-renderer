@@ -1,8 +1,7 @@
 import Canvas from "@app/Canvas/CanvasBase";
 import Map2d from '@app/components/Map2d';
-import RepoLink from "@app/components/RepoLink";
 import { useCameraControls } from '@app/hooks/useCameraControls';
-import render2d from '@app/stages/Stage0a/render2d';
+import render2d from '@app/stages/Stage0b/render2d';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
 import { createRender25d } from '../Stage1c/render25d';
@@ -17,9 +16,7 @@ const Stage: Component = () => {
   return (
     <section class="flex flex-col gap-4">
 
-      <p class="text">TODO</p>
-
-      <div class="grid grid-cols-1 gap-4 md:grid md:grid-cols-3 md:gap-6 md:items-start ">
+      <div class="my-10 grid grid-cols-1 gap-4 md:grid md:grid-cols-3 md:gap-6 md:items-start ">
         <div>
           <h4 class="flex justify-center text-xl mb-2">Пропуск стен</h4>
           <Canvas
@@ -52,11 +49,6 @@ const Stage: Component = () => {
         </div>
       </div>
 
-      <p class="text">TODO</p>
-
-      <p class="my-2">
-        <RepoLink filePath="stages/Stage1d3/render25d.ts">Реализация шага на github</RepoLink>
-      </p>
     </section>
   );
 };

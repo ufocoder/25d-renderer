@@ -44,7 +44,8 @@ interface Sector {
   wallColor?: string | Color;
   wallTexture?: string;
   brightness?: number;
-  segs: Seg[]
+  segs: Seg[];
+  items?: Item[]
 }
 
 type Level = {
@@ -70,4 +71,18 @@ interface Camera {
     width: number;
     height: number;
   }
+}
+
+interface Item {
+  type: string;
+  x: number;
+  y: number;
+  z?: number;
+  radius: number;
+  sprite?: {
+    width: number;
+    height: number;
+    colors: Color[];
+    bitmap: number[][];
+  };
 }

@@ -88,17 +88,27 @@ function drawGrid(
   scale: number,
   canvasWidth: number,
   canvasHeight: number,
-  gridSize: number = 1
 ) {
   ctx.save();
   ctx.strokeStyle = "#e0e0e0";
   ctx.lineWidth = 1;
   ctx.setLineDash([]);
-  
+
   const worldLeft = (-offsetX) / scale;
   const worldTop = (-offsetY) / scale;
   const worldRight = (canvasWidth - offsetX) / scale;
   const worldBottom = (canvasHeight - offsetY) / scale;
+  
+  // Динамический шаг сетки
+  const minScreenSpacing = 30; // минимальное расстояние между линиями в пикселях
+  let gridSize = Math.max(0.1, minScreenSpacing / scale);
+  
+  // Округление до 1, 2, 5, 10, 20, 50...
+  const exponent = Math.pow(10, Math.floor(Math.log10(gridSize)));
+  const fraction = gridSize / exponent;
+  if (fraction < 2) gridSize = 1 * exponent;
+  else if (fraction < 5) gridSize = 2 * exponent;
+  else gridSize = 5 * exponent;
   
   const startX = Math.floor(worldLeft / gridSize) * gridSize;
   const startY = Math.floor(worldTop / gridSize) * gridSize;

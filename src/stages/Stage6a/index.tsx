@@ -1,49 +1,46 @@
 import Canvas from "@app/Canvas/CanvasBase";
-import { useCameraControls } from "@app/hooks/useCameraControls";
-import render2dStage0 from '@app/stages/Stage0b/render2d';
+import Map2d from "@app/components/Map2d";
+import { useBspTree } from '@app/stages/Stage3a/hooks/useBspTree';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
-import render2dStage2j from '../Stage2j/render25d';
+import render2d from "./render2d";
+import { createRender25d } from './render25d';
 import defaultSettings from './settings';
+import { useCameraControlsV3 } from "../Stage4b/hooks/useCameraControls";
 
 const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
+  const bspTree = useBspTree({ settings });
 
-  useCameraControls<Settings>({ settings, setSettings });
+  useCameraControlsV3({ settings, setSettings, bspTree: bspTree() });
 
   return (
     <section class="flex flex-col gap-4">
-      
-      <p>TODO</p>
-
 
       <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
         <div class="flex flex-col gap-2">
           <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
           <div class="flex justify-center">
             <Canvas
-              width={400}
-              height={400}
               settings={settings}
-              render={render2dStage0} />
+              width={settings().camera.screen.width}
+              height={settings().camera.screen.height}
+              render={createRender25d({ bspTree: bspTree() })}
+            />
           </div>
         </div>
         <div class="flex flex-col gap-2">
           <h2 class="flex justify-center text-2xl">2D Renderer</h2>
           <div class="flex justify-center">
-             <Canvas
-              width={400}
-              height={400}
+            <Map2d
+              withControls
+              withVertical
               settings={settings}
-              render={render2dStage2j} />
+              render={render2d}
+            />
           </div>
         </div>
       </div>
-
-     <h2 class="text-2xl">Заголовок</h2>
-
-      <p>TODO</p>
-     
     </section>
   );
 };

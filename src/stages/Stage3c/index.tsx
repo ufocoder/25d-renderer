@@ -1,5 +1,5 @@
 import Canvas from "@app/Canvas/CanvasBase";
-import render2dStage0 from '@app/stages/Stage0a/render2d';
+import render2dStage0 from '@app/stages/Stage0b/render2d';
 
 import settings5 from '@app/stages/Stage3b/settings/sectors.corridor';
 import settings4 from '@app/stages/Stage3b/settings/sectors.pyramid';

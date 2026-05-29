@@ -2,8 +2,8 @@ import Canvas from "@app/Canvas/CanvasBase";
 import Map2d from '@app/components/Map2d';
 import RepoLink from "@app/components/RepoLink";
 import { useCameraControls } from '@app/hooks/useCameraControls';
-import render2d from '@app/stages/Stage0a/render2d';
-import render25dstage1e from '@app/stages/Stage1e/render25d';
+import render2d from '@app/stages/Stage0b/render2d';
+import render25d from './render25d';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
 import defaultSettings from './settings';
@@ -16,7 +16,9 @@ const Stage: Component = () => {
   return (
     <section class="flex flex-col gap-4">
 
-      <p>TODO</p>
+      <p class="py-2 text">
+        На первый взгляд, используя текущие наработки, кажется, что мы вполне успешно можем строить уровни с произвольной геометрией, если их сравнивать wolfenstend-3d:
+      </p>
 
       <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
         <div class="flex flex-col gap-2">
@@ -26,7 +28,7 @@ const Stage: Component = () => {
               settings={settings}
               width={settings().camera.screen.width}
               height={settings().camera.screen.height}
-              render={render25dstage1e}
+              render={render25d}
             />
           </div>
         </div>
@@ -34,6 +36,9 @@ const Stage: Component = () => {
           <h2 class="flex justify-center text-2xl">2D Renderer</h2>
           <div class="flex justify-center">
             <Map2d
+              initialZoom={0.6}
+              initialOffsetX={0}
+              initialOffsetY={40}
               withControls
               settings={settings}
               render={render2d}
@@ -42,7 +47,9 @@ const Stage: Component = () => {
         </div>
       </div>
 
-      <p>TODO</p>
+      <p class="py-2 text">
+        Однако использование алгоритма художника не гарантирует корректной отрисовки стен, возможны пересечения. Также алгоритм художника ставит нас в тупик производительности, когда в область видимости попадает множество стен, но в конечном счете на экране отображаетя только самая ближняя — мы делаешь лишние операции. Зафиксируем эту проблему и вернемся к ней позже.
+      </p>
 
       <p class="my-2">
         <RepoLink filePath="stages/Stage1g/render25d.ts">Реализация шага на github</RepoLink>

@@ -3,7 +3,7 @@ import { createLine, createLineY } from "@app/lib/level";
 
 const camera: Camera = {
   x: 200,
-  y: 280,
+  y: 320,
   fov: new Angle(45),
   angle: new Angle(270),
   screen: {

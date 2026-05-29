@@ -30,32 +30,32 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
       <span>Управление камерой </span>
       <kbd 
         class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
-        onMouseDown={() => handleMouseDown('w')}
-        onMouseUp={() => handleMouseUp('w')}
+        onPointerDown={() => handleMouseDown('w')}
+        onPointerUp={() => handleMouseUp('w')}
         onContextMenu={(e) => e.preventDefault()}
       >
         W
       </kbd>{" "}
       <kbd 
         class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
-        onMouseDown={() => handleMouseDown('a')}
-        onMouseUp={() => handleMouseUp('a')}
+        onPointerDown={() => handleMouseDown('a')}
+        onPointerUp={() => handleMouseUp('a')}
         onContextMenu={(e) => e.preventDefault()}
       >
         A
       </kbd>{" "}
       <kbd 
         class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
-        onMouseDown={() => handleMouseDown('s')}
-        onMouseUp={() => handleMouseUp('s')}
+        onPointerDown={() => handleMouseDown('s')}
+        onPointerUp={() => handleMouseUp('s')}
         onContextMenu={(e) => e.preventDefault()}
       >
         S
       </kbd>{" "}
       <kbd 
         class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
-        onMouseDown={() => handleMouseDown('d')}
-        onMouseUp={() => handleMouseUp('d')}
+        onPointerDown={() => handleMouseDown('d')}
+        onPointerUp={() => handleMouseUp('d')}
         onContextMenu={(e) => e.preventDefault()}
       >
         D
@@ -65,16 +65,16 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
           <span> и </span>
           <kbd 
             class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
-            onMouseDown={() => handleMouseDown('z')}
-            onMouseUp={() => handleMouseUp('z')}
+            onPointerDown={() => handleMouseDown('z')}
+            onPointerUp={() => handleMouseUp('z')}
             onContextMenu={(e) => e.preventDefault()}
           >
             Z
           </kbd>{" "}
           <kbd 
             class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
-            onMouseDown={() => handleMouseDown('x')}
-            onMouseUp={() => handleMouseUp('x')}
+            onPointerDown={() => handleMouseDown('x')}
+            onPointerUp={() => handleMouseUp('x')}
             onContextMenu={(e) => e.preventDefault()}
           >
             X

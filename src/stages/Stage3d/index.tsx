@@ -4,7 +4,7 @@ import { useCameraControls } from '@app/hooks/useCameraControls';
 import defaultSettings from '@app/stages/Stage3a/settings';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
-import render2d from "../Stage0a/render2d";
+import render2d from "../Stage0b/render2d";
 import render25d from './render25d';
 
 const Stage: Component = () => {

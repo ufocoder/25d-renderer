@@ -1,7 +1,42 @@
+
 import { Angle, normalizeAngle } from "@app/lib/Angle";
 import { drawPolygon } from "@app/lib/canvas";
 
-const WALL_HEIGHT = 40_000;
+
+const WALL_HEIGHT = 15_000;
+
+interface Wall {
+  projection: ReturnType<typeof projectLinedef>;
+  distance: number;
+  color: string;
+}
+
+const COLOR_FLOOR = '#8B7355';
+const COLOR_CEIL = '#87CEEB';
+
+const colors: string[] = [
+  '#FF9500',
+  '#FFCC00',
+  '#34C759',
+  '#00C7BE',
+  '#5AC8FA',
+  '#FF3B30',
+  '#007AFF',
+  '#AF52DE',
+  '#FF2D55',
+  '#A2845E',
+];
+
+function gerenateColor(index: number) {
+  return colors[index % colors.length];
+}
+
+function toMiddleVertex(a: Vertex, b: Vertex): Vertex {
+  return {
+    x: (a.x + b.x) / 2,
+    y: (a.y + b.y) / 2
+  };
+}
 
 function toAngle(a: Vertex, b: Vertex): Angle {
   const dx = a.x - b.x;
@@ -190,14 +225,49 @@ export default function render25d(
   settings: Settings,
 ) {
   const camera = settings.camera;
+  const walls: Wall[] = [];
 
-  for (const linedef of settings.level.linedefs) {
+  settings.level.linedefs.forEach(function(linedef, index) {
     const projection = projectLinedef(camera, linedef);
 
     if (!projection) {
-      continue;
+      return;
     }
-    
-    drawPolygon(ctx, projectionToPoints(camera, projection));
+
+    const linedefMiddle = toMiddleVertex(
+      linedef.start,
+      linedef.end,
+    );
+
+    const distance = toDistance(camera, linedefMiddle);
+
+    walls.push({
+      distance, 
+      projection,
+      color: gerenateColor(index)
+    });
+  })
+
+  walls.sort((a, b) => b.distance - a.distance);
+
+  const sh = settings.camera.screen.height;
+  const sw = settings.camera.screen.width;
+
+  drawPolygon(ctx, [
+    { x: 0, y: 0},
+    { x: 0, y: sh/ 2},
+    { x: sw, y: sh / 2},
+    { x: sw, y: 0 }
+  ], COLOR_CEIL);
+
+  drawPolygon(ctx, [
+    { x: 0, y: sh },
+    { x: 0, y: sh/ 2 },
+    { x: sw, y: sh / 2 },
+    { x: sw, y: sh }
+  ], COLOR_FLOOR);
+  
+  for (const wall of walls) {
+    drawPolygon(ctx, projectionToPoints(camera, wall.projection!), wall.color);
   }
 }

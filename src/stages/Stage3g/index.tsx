@@ -1,7 +1,7 @@
 import Canvas from "@app/Canvas/CanvasBase";
 import Map2d from '@app/components/Map2d';
 import { useCameraControls } from '@app/hooks/useCameraControls';
-import render2dStage0 from '@app/stages/Stage0a/render2d';
+import render2dStage0 from '@app/stages/Stage0b/render2d';
 import render25d from '@app/stages/Stage3d/render25d';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';

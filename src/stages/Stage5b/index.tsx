@@ -3,7 +3,7 @@ import Map2d from "@app/components/Map2d";
 import { useBspTree } from '@app/stages/Stage3a/hooks/useBspTree';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
-import render2d from "../Stage0a/render2d";
+import render2d from "../Stage0b/render2d";
 import { useCameraControlsV3 } from "../Stage4b/hooks/useCameraControls";
 import { createRender25d } from './render25d';
 import defaultSettings from './settings';
