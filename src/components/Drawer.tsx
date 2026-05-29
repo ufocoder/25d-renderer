@@ -48,7 +48,7 @@ const MenuGroup: Component<{
       
       <div
         class={`overflow-hidden transition-all duration-200 ${
-          props.isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          props.isExpanded ? 'opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         <ul class="m-0 list-none space-y-0.5 pl-0">

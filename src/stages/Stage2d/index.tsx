@@ -16,9 +16,9 @@ const Stage: Component = () => {
   return (
     <section class="flex flex-col gap-4">
 
-      <p>Зная координаты вершин стены, достроим вертикальные линии и получим разукрушенные пол и потолок</p>
+      <p>Зная координаты вершин стены, достроим вертикальные линии — получим пол и потолок</p>
 
-      <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
+      <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
         <div class="flex flex-col gap-2">
           <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
           <div class="flex justify-center">
@@ -42,8 +42,6 @@ const Stage: Component = () => {
           </div>
         </div>
       </div>
-
-      <p>TODO</p>
 
       <p class="my-2">
         <RepoLink filePath="stages/Stage2d/render25d.ts">Реализация шага на github</RepoLink>

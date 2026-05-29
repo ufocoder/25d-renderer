@@ -2,11 +2,11 @@ import { Angle } from "@app/lib/Angle";
 import { createRectangleLines } from "@app/lib/level";
 
 const camera: Camera = {
-  x: 60,
-  y: 70,
+  x: 325,
+  y: 90,
   z: 2_000,
   fov: new Angle(45),
-  angle: new Angle(0),
+  angle: new Angle(30),
   screen: {
     width: 400,
     height: 320,

@@ -1,6 +1,7 @@
 import { drawPolygon } from "@app/lib/canvas";
-import type { SegProjection } from "./projection";
-import { projectionToPoints, projectSeg, toDistance } from "./projection";
+import wait from "@app/lib/wait";
+import type { SegProjection } from "../Stage2d/projection";
+import { projectionToPoints, projectSeg, toDistance } from "../Stage2d/projection";
 
 interface Wall {
   projection: SegProjection
@@ -17,8 +18,6 @@ interface PolygonProjection {
 interface PortalClip {
   leftX: number;
   rightX: number;
-  topY: number;
-  bottomY: number;
 }
 
 function isPortal(seg: Seg): boolean {
@@ -29,6 +28,33 @@ function toMiddleVertex(a: Vertex, b: Vertex): Vertex {
   return {
     x: (a.x + b.x) / 2,
     y: (a.y + b.y) / 2
+  };
+}
+
+function createFloorPolygon(
+  projection: SegProjection,
+  screenHeight: number
+): PolygonProjection | null {
+  const startX = projection.start.screenX;
+  const endX = projection.end.screenX;
+  const bottomStartY = projection.start.bottomY;
+  const bottomEndY = projection.end.bottomY;
+  
+  if (bottomStartY >= screenHeight && bottomEndY >= screenHeight) {
+    return null;
+  }
+  
+  const points: Vertex[] = [
+    { x: startX, y: Math.max(0, Math.min(screenHeight, bottomStartY)) },
+    { x: endX, y: Math.max(0, Math.min(screenHeight, bottomEndY)) },
+    { x: endX, y: screenHeight },
+    { x: startX, y: screenHeight },
+  ];
+  
+  return {
+    points,
+    color: projection.sector.floorColor!,
+    distance: projection.distance
   };
 }
 
@@ -53,71 +79,24 @@ function isPointInSector(point: Vertex, sector: Sector): boolean {
   return inside;
 }
 
-function createFloorPolygon(
-  projection: SegProjection,
-  screenHeight: number,
-  clip?: PortalClip | null
-): PolygonProjection | null {
-  const startX = projection.start.screenX;
-  const endX = projection.end.screenX;
-  let bottomStartY = projection.start.bottomY;
-  let bottomEndY = projection.end.bottomY;
-  
-  let floorTopY = 0;
-  let floorBottomY = screenHeight;
-  
-  if (clip) {
-    bottomStartY = Math.max(bottomStartY, clip.topY);
-    bottomEndY = Math.max(bottomEndY, clip.topY);
-    floorBottomY = clip.bottomY;
-  }
-  
-  if (bottomStartY >= floorBottomY && bottomEndY >= floorBottomY) {
-    return null;
-  }
-  
-  const points: Vertex[] = [
-    { x: startX, y: Math.max(floorTopY, Math.min(floorBottomY, bottomStartY)) },
-    { x: endX, y: Math.max(floorTopY, Math.min(floorBottomY, bottomEndY)) },
-    { x: endX, y: floorBottomY },
-    { x: startX, y: floorBottomY },
-  ];
-  
-  return {
-    points,
-    color: projection.sector.floorColor!,
-    distance: projection.distance
-  };
-}
-
 function createCeilPolygon(
   projection: SegProjection,
-  screenHeight: number,
-  clip?: PortalClip | null
+  screenHeight: number
 ): PolygonProjection | null {
   const startX = projection.start.screenX;
   const endX = projection.end.screenX;
-  let topStartY = projection.start.topY;
-  let topEndY = projection.end.topY;
+  const topStartY = projection.start.topY;
+  const topEndY = projection.end.topY;
   
-  let ceilTopY = 0;
-  let ceilBottomY = screenHeight;
-  
-  if (clip) {
-    topStartY = Math.min(topStartY, clip.bottomY);
-    topEndY = Math.min(topEndY, clip.bottomY);
-    ceilTopY = clip.topY;
-  }
-  
-  if (topStartY <= ceilTopY && topEndY <= ceilTopY) {
+  if (topStartY <= 0 && topEndY <= 0) {
     return null;
   }
   
   const points: Vertex[] = [
-    { x: startX, y: ceilTopY },
-    { x: endX, y: ceilTopY },
-    { x: endX, y: Math.max(ceilTopY, Math.min(ceilBottomY, topEndY)) },
-    { x: startX, y: Math.max(ceilTopY, Math.min(ceilBottomY, topStartY)) },
+    { x: startX, y: 0 },
+    { x: endX, y: 0 },
+    { x: endX, y: Math.max(0, Math.min(screenHeight, topEndY)) },
+    { x: startX, y: Math.max(0, Math.min(screenHeight, topStartY)) },
   ];
   
   return {
@@ -127,7 +106,7 @@ function createCeilPolygon(
   };
 }
 
-function renderSectorWithPortal(
+async function renderSectorWithPortal(
   ctx: CanvasRenderingContext2D,
   camera: Camera,
   sector: Sector,
@@ -142,7 +121,7 @@ function renderSectorWithPortal(
   const walls: Wall[] = [];
   const floorPolygons: PolygonProjection[] = [];
   const ceilPolygons: PolygonProjection[] = [];
-  const portals: { projection: SegProjection; backSector: Sector; clipLeft: number; clipRight: number; clipTop: number; clipBottom: number }[] = [];
+  const portals: { projection: SegProjection; backSector: Sector; clipLeft: number; clipRight: number }[] = [];
 
   const screenHeight = camera.screen.height;
 
@@ -155,29 +134,13 @@ function renderSectorWithPortal(
 
     let startX = projection.start.screenX;
     let endX = projection.end.screenX;
-    let startTopY = projection.start.topY;
-    let startBottomY = projection.start.bottomY;
-    let endTopY = projection.end.topY;
-    let endBottomY = projection.end.bottomY;
-
+    
     if (clip !== null) {
       if (endX <= clip.leftX || startX >= clip.rightX) {
         return;
       }
-      
-      if (startX < clip.leftX) {
-        const t = (clip.leftX - startX) / (endX - startX);
-        startTopY = startTopY + t * (endTopY - startTopY);
-        startBottomY = startBottomY + t * (endBottomY - startBottomY);
-        startX = clip.leftX;
-      }
-      
-      if (endX > clip.rightX) {
-        const t = (clip.rightX - startX) / (endX - startX);
-        endTopY = startTopY + t * (endTopY - startTopY);
-        endBottomY = startBottomY + t * (endBottomY - startBottomY);
-        endX = clip.rightX;
-      }
+      if (startX < clip.leftX) startX = clip.leftX;
+      if (endX > clip.rightX) endX = clip.rightX;
     }
 
     const linedefMiddle = toMiddleVertex(seg.start, seg.end);
@@ -185,31 +148,16 @@ function renderSectorWithPortal(
 
     const clippedProjection: SegProjection = {
       ...projection,
-      start: { 
-        ...projection.start, 
-        screenX: startX,
-        topY: startTopY,
-        bottomY: startBottomY
-      },
-      end: { 
-        ...projection.end, 
-        screenX: endX,
-        topY: endTopY,
-        bottomY: endBottomY
-      }
+      start: { ...projection.start, screenX: startX },
+      end: { ...projection.end, screenX: endX }
     };
 
     if (isPortal(seg)) {
-      const clipTop = Math.min(startTopY, endTopY);
-      const clipBottom = Math.max(startBottomY, endBottomY);
-      
       portals.push({
         projection: clippedProjection,
         backSector: seg.backSector!,
         clipLeft: startX,
-        clipRight: endX,
-        clipTop: clipTop,
-        clipBottom: clipBottom
+        clipRight: endX
       });
     } else {
       walls.push({
@@ -219,8 +167,8 @@ function renderSectorWithPortal(
       });
     }
 
-    const floorPoly = createFloorPolygon(clippedProjection, screenHeight, clip);
-    const ceilPoly = createCeilPolygon(clippedProjection, screenHeight, clip);
+    const floorPoly = createFloorPolygon(clippedProjection, screenHeight);
+    const ceilPoly = createCeilPolygon(clippedProjection, screenHeight);
     
     if (floorPoly) {
       floorPolygons.push(floorPoly);
@@ -238,23 +186,23 @@ function renderSectorWithPortal(
     drawPolygon(ctx, poly.points, poly.color);
   }
   
+  for (const poly of floorPolygons) {
+    drawPolygon(ctx, poly.points, poly.color);
+  }
+  
   for (const wall of walls) {
     const points = projectionToPoints(wall.projection);
     drawPolygon(ctx, points, wall.color);
   }
-  
-  for (const poly of floorPolygons) {
-    drawPolygon(ctx, poly.points, poly.color);
-  }
+
+  await wait(1_000);
 
   portals.sort((a, b) => b.projection.distance - a.projection.distance);
-  
+
   for (const portal of portals) {
     const newClip: PortalClip = {
       leftX: Math.max(clip?.leftX ?? -Infinity, portal.clipLeft),
-      rightX: Math.min(clip?.rightX ?? Infinity, portal.clipRight),
-      topY: Math.max(clip?.topY ?? -Infinity, portal.clipTop),
-      bottomY: Math.min(clip?.bottomY ?? Infinity, portal.clipBottom)
+      rightX: Math.min(clip?.rightX ?? Infinity, portal.clipRight)
     };
     
     renderSectorWithPortal(
@@ -280,7 +228,7 @@ function findCameraSector(settings: Settings): Sector {
   return settings.level.sectors![0];
 }
 
-export default function render25d(
+export default async function render25d(
   ctx: CanvasRenderingContext2D,
   settings: Settings,
 ) {
@@ -288,5 +236,5 @@ export default function render25d(
 
   const currentSector = findCameraSector(settings);
 
-  renderSectorWithPortal(ctx, camera, currentSector, new Set(), null);
+  await renderSectorWithPortal(ctx, camera, currentSector, new Set(), null);
 }

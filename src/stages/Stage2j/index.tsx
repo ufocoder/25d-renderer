@@ -15,35 +15,37 @@ const Stage: Component = () => {
   return (
     <section class="flex flex-col gap-4">
 
-      <div class="grid grid-cols-2 gap-4">
-        <div class="mt-4 flex flex-col">
-          <h2 class="text-2xl">2.5D Renderer</h2>
+      <p class="py-2 text">
+         Трапецевидный клиппинг не совершен, необходимо многоугольник. Используем алгоритм <a href="https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm" class="link underline" target="_blank">Сазерленда—Ходгмана</a> (1974?):
+      </p>
+
+      <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
+        <div class="flex flex-col gap-2">
+          <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
+          <div class="flex justify-center">
+            <Canvas
+              settings={settings}
+              width={settings().camera.screen.width}
+              height={settings().camera.screen.height}
+              render={render25d} />
+          </div>
         </div>
-        <div class="mb-2 mt-4">
-          <h2 class="text-2xl">2D Renderer</h2>
+        <div class="flex flex-col gap-2">
+          <h2 class="flex justify-center text-2xl">2D Renderer</h2>
+          <div class="flex justify-center">
+            <Map2d
+              initialZoom={0.8}
+              initialOffsetX={0}
+              initialOffsetY={80}
+              withControls
+              width={400}
+              height={320}
+              settings={settings}
+              render={render2d} />
+          </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
-        <div class="grid gap-4">
-          <h4 class="text">Трапецевидный клиппинг не совершен, необходимо обрезать стены</h4>
-           <Canvas
-            settings={settings}
-            width={settings().camera.screen.width}
-            height={settings().camera.screen.height}
-            render={render25d}
-          />
-          https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm
-        </div>
-        <div>
-          <Map2d
-            withControls
-            width={400}
-            height={320}
-            settings={settings}
-            render={render2d} />
-        </div>
-      </div>
     </section>
   );
 };

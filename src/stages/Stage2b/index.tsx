@@ -9,7 +9,25 @@ import { createSignal } from 'solid-js';
 import render25d from './render25d';
 import defaultSettings from './settings';
 
+
 const code1 = `
+  interface Sector {
+    // ..
+    height: number;
+  }
+
+`;
+
+const code2 = `
+  function createCircleLines(
+    centerX: number,
+    centerY: number,
+    radius: number,
+    segments: number = 36,
+  ): Seg[] {
+    // ..
+  }
+
   const sector1 = {
     height: 10_000,
     segs: createCircleLines(150, 130, 85, 8)
@@ -38,11 +56,14 @@ const Stage: Component = () => {
 
   return (
     <section class="flex flex-col gap-4">
+      
+      <p class="px-2 text">
+        Добавим в описание сектора его высоту и попробуем получить проекцию:
+      </p>
 
-      <p>Так же проекция, но только разные высоты стен</p>
+      <CodeBlock code={code1} lang="ts" />
 
-
-      <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
+      <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
         <div class="flex flex-col gap-2">
           <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
           <div class="flex justify-center">
@@ -68,7 +89,11 @@ const Stage: Component = () => {
         </div>
       </div>
 
-      <CodeBlock code={code1} lang="ts" />
+      <p class="px-2 text">
+        Для примера выше исползуем следующие описание секторов
+      </p>
+
+      <CodeBlock code={code2} lang="ts" />
 
       <p class="my-2">
         <RepoLink filePath="stages/Stage2a/render25d.ts">Реализация шага на github</RepoLink>

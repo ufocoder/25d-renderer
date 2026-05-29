@@ -1,26 +1,19 @@
 import Canvas from "@app/Canvas/CanvasBase";
 import Map2d from '@app/components/Map2d';
 import RepoLink from "@app/components/RepoLink";
-import { useCameraControls } from '@app/hooks/useCameraControls';
 import render2d from '@app/stages/Stage0b/render2d';
-import render25dStage2d from "@app/stages/Stage2d/render25d";
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
+import render25d from './render25d';
 import defaultSettings from './settings';
 
 const Stage: Component = () => {
-  const [settings, setSettings] = createSignal<Settings>(defaultSettings);
-
-  useCameraControls<Settings>({ settings, setSettings });
+  const [settings] = createSignal<Settings>(defaultSettings);
 
   return (
     <section class="flex flex-col gap-4">
 
-      <p class="py-2 text">
-        Текущие понимание сектора не позволяет рисовать соседние сектора
-      </p>
-
-      <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
+      <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
         <div class="flex flex-col gap-2">
           <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
           <div class="flex justify-center">
@@ -28,7 +21,7 @@ const Stage: Component = () => {
               settings={settings}
               width={settings().camera.screen.width}
               height={settings().camera.screen.height}
-              render={render25dStage2d}
+              render={render25d}
             />
           </div>
         </div>
@@ -36,7 +29,6 @@ const Stage: Component = () => {
           <h2 class="flex justify-center text-2xl">2D Renderer</h2>
           <div class="flex justify-center">
             <Map2d
-              withControls
               width={400}
               height={320}
               settings={settings}
@@ -46,7 +38,7 @@ const Stage: Component = () => {
       </div>
 
       <p class="my-2">
-        <RepoLink filePath="stages/Stage2e/render25d.ts">Реализация шага на github</RepoLink>
+        <RepoLink filePath="stages/Stage2f/render25d.ts">Реализация шага на github</RepoLink>
       </p>
 
     </section>
