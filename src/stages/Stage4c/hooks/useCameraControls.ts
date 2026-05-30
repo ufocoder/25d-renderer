@@ -7,7 +7,7 @@ import { checkCollisionOptimized, DEFAULT_CONFIG } from "../../Stage4b/collision
 
 const DEFAULT_CAMERA_HEIGHT = 500;
 const DEFAULT_CAMERA_VERTICAL_SPEED = 50;
-const CAMERA_BOBBING_AMPLITUDE = 150; // Амплитуда покачивания
+const CAMERA_BOBBING_AMPLITUDE = 400; // Амплитуда покачивания
 const CAMERA_BOBBING_SPEED = 50; // Скорость покачивания
 
 interface UseCameraControlsProps {

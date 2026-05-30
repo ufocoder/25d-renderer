@@ -10,7 +10,7 @@ export interface CollisionConfig {
 }
 
 export const DEFAULT_CONFIG: CollisionConfig = {
-  playerRadius: 0,
+  playerRadius: 5,
   stepHeight: 1000
 };
 

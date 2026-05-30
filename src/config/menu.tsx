@@ -71,10 +71,10 @@ export const menuGroups: MenuEntry[] = [
   {
     title: 'Stage 3: Binary Space Partition',
     links: [
-      { href: '/stage-3a', label: 'Отрисова внутреннего сектора' },
+      { href: '/stage-3a', label: 'Отрисовка внутреннего сектора' },
       { href: '/stage-3b', label: 'Разбитие на подсектора' },
       { href: '/stage-3c', label: 'Тест: варианты разбития' },
-      { href: '/stage-3d', label: 'Отрисова внутреннего сектора' },
+      { href: '/stage-3d', label: 'Отрисовка внутреннего сектора' },
       { href: '/stage-3e', label: 'Порталы 1D: соединяем сектора' },
       { href: '/stage-3f', label: 'Порталы 2D: соединяем сектора' },
       { href: '/stage-3g', label: 'Высота камеры' },
@@ -85,7 +85,7 @@ export const menuGroups: MenuEntry[] = [
     title: 'Stage 4: Улучшаем движение',
     links: [
       { href: '/stage-4a', label: 'Учитываем высоту сектора' },
-      { href: '/stage-4b', label: 'Коллизиции со стенами' },
+      { href: '/stage-4b', label: 'Коллизии со стенами' },
       { href: '/stage-4c', label: 'Покачивание камеры' },
     ],
   },

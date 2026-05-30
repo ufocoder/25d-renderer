@@ -74,6 +74,8 @@ const Stage: Component = () => {
         </div>
       </div>
 
+      <h2 class="text-2xl">Немного кода</h2>
+
       <CodeBlock code={code1} lang="ts" />
 
     </section>

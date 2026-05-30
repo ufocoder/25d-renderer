@@ -8,6 +8,7 @@ import render25d from './render25d';
 import defaultSettings from './settings';
 import CodeBlock from "@app/components/Code";
 
+
 const code1 = `
   function render25d(
     ctx: CanvasRenderingContext2D,
@@ -16,7 +17,6 @@ const code1 = `
     const camera = settings.camera;
     const allSegments = settings.level.linedefs;
     const bspTree = buildBSPTree(allSegments);
-
     const solidWallRanges = createSolidWallRanges(camera);
 
     traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
@@ -35,6 +35,45 @@ const code1 = `
       }
     });
   }
+
+`;
+
+const code2 = `
+  function createSolidWallRanges(camera: Camera) {
+    const ranges: SolidSegmentRange[] = [];
+
+    ranges.push({ xStart: Number.MIN_SAFE_INTEGER, xEnd: -1 });
+    ranges.push({ xStart: camera.screen.width, xEnd: Number.MAX_SAFE_INTEGER });
+
+    return ranges;
+  }
+
+`;
+
+const code3 = `
+  function drawSolidWall(
+    ctx: CanvasRenderingContext2D,
+    camera:Camera, 
+    // .. 
+    solidWallRanges: SolidSegmentRange[]
+  ) {
+    // ..
+    const xStart = projection.start.screenX;
+    const xEnd = projection.end.screenX;
+    const xFrom = Math.max(0, Math.floor(Math.min(xStart, xEnd)));
+    const xTo = Math.min(camera.screen.width - 1, Math.ceil(Math.max(xStart, xEnd)));
+    // ..
+    for (let x = xFrom; x <= xTo; x++) {
+      if (!isWallVisible(x, solidWallRanges)) {
+        continue;
+      }
+  
+      // рисуем стены
+    }
+  
+    addSolidRange(camera, xStart, xEnd, solidWallRanges);
+  }
+
 `;
 
 const Stage: Component = () => {
@@ -70,8 +109,12 @@ const Stage: Component = () => {
         </div>
       </div>
 
+      <h2 class="text-2xl">Немного кода</h2>
 
       <CodeBlock code={code1} lang="ts" />
+
+      <CodeBlock code={code2} lang="ts" />
+      <CodeBlock code={code3} lang="ts" />
 
     </section>
   );
