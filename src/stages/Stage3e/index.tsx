@@ -39,6 +39,11 @@ const code1 = `
 `;
 
 const code2 = `
+  interface SolidSegmentRange {
+    xStart: number;
+    xEnd: number;
+  }
+
   function createSolidWallRanges(camera: Camera) {
     const ranges: SolidSegmentRange[] = [];
 
