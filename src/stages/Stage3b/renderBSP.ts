@@ -1,12 +1,9 @@
-import { Angle } from "@app/lib/Angle";
-import { drawAngleLine, drawLinedef, drawPolygon } from "@app/lib/canvas";
+import { drawLinedef, drawPolygon } from "@app/lib/canvas";
 import wait from "@app/lib/wait";
 import { buildBSPTree } from "./bsp/build-async";
 import { sortPointsClockwise, uniquePoints } from "./bsp/geometry";
 import { traverseBSPTree } from "./bsp/traverse";
 import type { BSPLeaf, BSPNode } from "./bsp/typings";
-
-const RAY_LENGTH = 500;
 
 const colors: string[] = [
   '#FF9500',
@@ -104,15 +101,15 @@ export default async function render2d(ctx: CanvasRenderingContext2D, settings: 
     drawLinedef(ctx, data.splitter, 'green', 5);
 
     await wait(2_000);
-
+/*
     for (const linedef of data.frontSegs) {
-      drawLinedef(ctx, scaleLinedef(linedef, scale), 'red', 5);
+      //drawLinedef(ctx, scaleLinedef(linedef, scale), 'red', 5);
     }
 
     for (const linedef of data.backSegs) {
-      drawLinedef(ctx, scaleLinedef(linedef, scale), 'blue', 5);
+      //drawLinedef(ctx, scaleLinedef(linedef, scale), 'blue', 5);
     }
-
+*/
     await wait(2_000);
 
     //drawBSPnodeBBox(ctx, data.frontSegs, scale, order);
@@ -128,21 +125,4 @@ export default async function render2d(ctx: CanvasRenderingContext2D, settings: 
   traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
     drawLeaf(ctx, bspNode, scale, ++order);
   });
-
-  const halfFov = camera.fov.degrees / 2;
-  const angle = camera.angle.degrees;
-
-  drawAngleLine(ctx, camera.x * scale, camera.y * scale, new Angle(angle - halfFov), RAY_LENGTH);
-  drawAngleLine(ctx, camera.x * scale, camera.y * scale, new Angle(angle), RAY_LENGTH);
-  drawAngleLine(ctx, camera.x * scale, camera.y * scale, new Angle(angle + halfFov), RAY_LENGTH);
-  
-  ctx.fillStyle = "#00ff88";
-  ctx.beginPath();
-  ctx.strokeStyle = "#00ff88";
-  ctx.lineWidth = 2;
-  const lookX = camera.x * scale + Math.cos(camera.angle.radians) * 20;
-  const lookY = camera.y * scale + Math.sin(camera.angle.radians) * 20;
-  ctx.moveTo(camera.x * scale, camera.y * scale);
-  ctx.lineTo(lookX, lookY);
-  ctx.stroke();
 };

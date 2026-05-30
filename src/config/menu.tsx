@@ -74,7 +74,7 @@ export const menuGroups: MenuEntry[] = [
       { href: '/stage-3a', label: 'Отрисова внутреннего сектора' },
       { href: '/stage-3b', label: 'Разбитие на подсектора' },
       { href: '/stage-3c', label: 'Тест: варианты разбития' },
-      { href: '/stage-3d', label: 'Один сектор с геометрией' },
+      { href: '/stage-3d', label: 'Отрисова внутреннего сектора' },
       { href: '/stage-3e', label: 'Порталы 1D: соединяем сектора' },
       { href: '/stage-3f', label: 'Порталы 2D: соединяем сектора' },
       { href: '/stage-3g', label: 'Высота камеры' },

@@ -14,6 +14,11 @@ const Stage: Component = () => {
 
   return (
     <section class="flex flex-col gap-4">
+
+
+      <p class="py-2 text">
+        Необходима поддержка отрисовки разности высот секторов
+      </p>
       
       <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
         <div class="flex flex-col gap-2">

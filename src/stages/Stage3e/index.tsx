@@ -6,6 +6,36 @@ import { createSignal } from 'solid-js';
 import render2d from "../Stage0b/render2d";
 import render25d from './render25d';
 import defaultSettings from './settings';
+import CodeBlock from "@app/components/Code";
+
+const code1 = `
+  function render25d(
+    ctx: CanvasRenderingContext2D,
+    settings: Settings,
+  ) {
+    const camera = settings.camera;
+    const allSegments = settings.level.linedefs;
+    const bspTree = buildBSPTree(allSegments);
+
+    const solidWallRanges = createSolidWallRanges(camera);
+
+    traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
+      for (const seg of bspNode.segs) {
+        const sector = seg.frontSector!;
+
+        const projection = projectSeg(camera, sector, seg);
+
+        if (!projection) {
+          continue;
+        }
+
+        if (!isPortal(seg)) {
+          drawSolidWall(ctx, camera, seg, projection, solidWallRanges);
+        }
+      }
+    });
+  }
+`;
 
 const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
@@ -39,6 +69,9 @@ const Stage: Component = () => {
           </div>
         </div>
       </div>
+
+
+      <CodeBlock code={code1} lang="ts" />
 
     </section>
   );

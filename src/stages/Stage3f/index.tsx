@@ -6,6 +6,42 @@ import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
 import render25d from './render25d';
 import defaultSettings from './settings';
+import CodeBlock from "@app/components/Code";
+
+
+const code1 = `
+  function render25d(
+    ctx: CanvasRenderingContext2D,
+    settings: Settings,
+  ) {
+    const camera = settings.camera;
+    const allSegments = settings.level.linedefs;
+    const bspTree = buildBSPTree(allSegments);
+  
+    const wallRanges = createSolidWallRanges(camera);
+    const upperClip = new Array(camera.screen.width).fill(-1);
+    const lowerClip = new Array(camera.screen.width).fill(camera.screen.height)
+  
+    traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
+      for (const seg of bspNode.segs) {
+        const sector = seg.frontSector!;
+  
+        const projection = projectSeg(camera, sector, seg);
+  
+        if (!projection) {
+          continue;
+        }
+  
+        if (isPortal(seg)) {
+          drawPortalSegment(ctx, camera, seg, projection, wallRanges, upperClip, lowerClip);
+        } else {
+          drawSolidSegment(ctx, camera, seg, projection, wallRanges, upperClip, lowerClip);
+        }
+      }
+    });
+  }
+  
+`;
 
 const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
@@ -15,7 +51,6 @@ const Stage: Component = () => {
   return (
     <section class="flex flex-col gap-4">
 
-      
       <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
         <div class="flex flex-col gap-2">
           <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
@@ -40,6 +75,8 @@ const Stage: Component = () => {
           </div>
         </div>
       </div>
+
+      <CodeBlock code={code1} lang="ts" />
 
     </section>
   );

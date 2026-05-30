@@ -144,7 +144,6 @@ export default function render25d(
   const camera = settings.camera;
   const allSegments = settings.level.linedefs;
   const bspTree = buildBSPTree(allSegments);
-
   const solidWallRanges = createSolidWallRanges(camera);
 
   traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {

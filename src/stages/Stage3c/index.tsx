@@ -9,7 +9,7 @@ import settings7 from '@app/stages/Stage3b/settings/single.sector.stairs.b';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
 import { useBspTree } from "../Stage3a/hooks/useBspTree";
-import createRender2dStage6 from './renderBSP';
+import createRender2d from './renderBSP';
 
 const settingsSet = [
   settings2,
@@ -39,7 +39,7 @@ const Row: Component<RowProps> = ({ settings: defaultSettings }) => {
           width={400}
           height={400}
           settings={settings}
-          render={createRender2dStage6(bspTree())} />
+          render={createRender2d(bspTree())} />
       </div>
   );
 };

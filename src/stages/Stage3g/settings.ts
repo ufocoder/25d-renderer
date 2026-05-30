@@ -5,7 +5,7 @@ const camera: Camera = {
   y: 380,
   z: 16,
   fov: new Angle(45),
-  angle: new Angle(-90),
+  angle: new Angle(300),
   screen: {
     width: 400,
     height: 320,
