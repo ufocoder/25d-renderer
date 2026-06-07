@@ -40,7 +40,7 @@ export const menuGroups: MenuEntry[] = [
     title: 'Stage 1: Отрисовка стен',
     links: [
       { href: '/stage-1a', label: 'Проекция вершин' },
-      { href: '/stage-1b', label: 'Проекция стены' },
+      { href: '/stage-1b', label: 'Проекция отрезков' },
       { href: '/stage-1c', label: 'Проблема Fish eye' },
       { href: '/stage-1d1', label: 'Отсечение: полярные координаты и интерполяция' },
       { href: '/stage-1d2', label: 'Отсечение: учитываем угол камеры' },
@@ -77,8 +77,8 @@ export const menuGroups: MenuEntry[] = [
       { href: '/stage-3d', label: 'Отрисовка внутреннего сектора' },
       { href: '/stage-3e', label: 'Порталы 1D: соединяем сектора' },
       { href: '/stage-3f', label: 'Порталы 2D: соединяем сектора' },
-      { href: '/stage-3g', label: 'Высота камеры' },
-      { href: '/stage-3h', label: 'Разные высоты секторов' },
+      { href: '/stage-3g', label: 'Разные высоты секторов: проблема' },
+      { href: '/stage-3h', label: 'Разные высоты секторов: решение' },
     ],
   },
   {
@@ -99,13 +99,11 @@ export const menuGroups: MenuEntry[] = [
       { href: '/stage-5e', label: 'Уровень освещения секторов' },
     ],
   },
-  /*
   {
     title: 'Stage 6: Прочее',
     links: [
       { href: '/stage-6a', label: 'Предметы' },
     ],
   },
-  */
   { href: '/demo', label: 'Demo' },
 ];

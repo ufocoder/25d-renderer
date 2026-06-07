@@ -15,7 +15,9 @@ const Stage: Component = () => {
 
   return (
     <section class="flex flex-col gap-4">
-
+      <p class="py-text">
+        На этом шаге убедимся, что все наши расчеты корректны при любом угле поворота камеры
+      </p>
       <div class="my-10 grid grid-cols-1 gap-4 md:grid md:grid-cols-3 md:gap-6 md:items-start ">
         <div>
           <h4 class="flex justify-center text-xl mb-2">Пропуск стен</h4>
@@ -38,7 +40,7 @@ const Stage: Component = () => {
             render={render2d} />
         </div>
         <div>
-          <h4 class="flex justify-center text-xl mb-2">Обрезка стен</h4>
+          <h4 class="flex justify-center text-xl mb-2">Отсечение стен</h4>
           <Canvas
             className='w-full'
             settings={settings}

@@ -26,9 +26,9 @@ const groundSector: Sector = {
 
 const step1Sector: Sector = {
   id: 2,
-  floorHeight: 0,
+  floorHeight: 2_000,
   floorColor: "#8B6914",
-  ceilHeight: 2_000,
+  ceilHeight: 10_000,
   ceilColor: "#87CEEB",
   wallColor: "#A0522D",
   segs: []

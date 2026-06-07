@@ -99,11 +99,9 @@ function drawGrid(
   const worldRight = (canvasWidth - offsetX) / scale;
   const worldBottom = (canvasHeight - offsetY) / scale;
   
-  // Динамический шаг сетки
-  const minScreenSpacing = 30; // минимальное расстояние между линиями в пикселях
+  const minScreenSpacing = 30;
   let gridSize = Math.max(0.1, minScreenSpacing / scale);
   
-  // Округление до 1, 2, 5, 10, 20, 50...
   const exponent = Math.pow(10, Math.floor(Math.log10(gridSize)));
   const fraction = gridSize / exponent;
   if (fraction < 2) gridSize = 1 * exponent;

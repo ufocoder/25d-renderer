@@ -7,15 +7,6 @@ const code1 = `
     y: number;
   }
 
-  interface Sidedef {
-    xOffset: number;
-    yOffset: number;
-    upperTexture: string;
-    lowerTexture: string;
-    middleTexture: string;
-    sector?: Sector;
-  }
-
   interface Linedef {
     startVertex: Vertex;
     endVertex: Vertex;
@@ -35,6 +26,15 @@ const code1 = `
     offset: number;
     rightSector?: Sector;
     leftSector?: Sector;
+  }
+
+  interface Sidedef {
+    xOffset: number;
+    yOffset: number;
+    upperTexture: string;
+    lowerTexture: string;
+    middleTexture: string;
+    sector?: Sector;
   }
 
   interface BSPNode {
@@ -73,15 +73,15 @@ const Stage: Component = () => {
   return (
     <section class="flex flex-col gap-4">
       <p class="py-2 text">
-        Уровни в DOOM описываются с помощью <a class="link underline" href="https://doom.fandom.com/wiki/WAD" target="_blank">WAD файлов</a>. 
-        Если попытаться представить часть сущностей, которые описываются в WAD файле, то можно выделить следующие TypeScript интерфейсы и типы:
+        Уровни в оригинальном DOOM описываются с помощью <a class="link underline" href="https://doom.fandom.com/wiki/WAD" target="_blank">WAD файлов</a>. В них хранится абсолютно все: от графики и звуков до описания самих уровней. Название WAD расшифровывается как <span class="font-semibold">Where's All the Data?</span>, а "Где все данные?". 
+        Если попытаться грубо представить часть сущностей из WAD файла, которые описывают исключительно геометрию уровня с помощью TypeScript, то можно выделить следующие  интерфейсы и типы:
       </p>
       <CodeBlock code={code1} lang='ts'/>
       <p class="py-2 text">
-        На самом деле их больше. Мы будем использовазовать свои абстрации и при этом пытаться следовать духу исходного кода DOOM. Другими словами, если вы обнаружите, что одноименные сущности отличаются, имеют разный состав свойств и полей, то это будет ожидаемым результатом.
+        Мы будем вводить свои абстракции и при этом пытаться следовать духу исходного кода DOOM. Другими словами, если вы обнаружите, что одноименные сущности немного отличаются, имеют разный состав свойств или их типов, то это будет ожидаемым результатом.
       </p>
       <p class="py-2 text">
-        Целью данного цикла заметок является не сделать клон DOOM, но воспользоваться его идеями.
+        Повторюсь, что целью данного цикла заметок не является сделать клон DOOM, но воспользоваться его идеями. В любом случае ничто не мешает вам в будущем переписать полученный код или написать маппер позволяющий "читать" оригинальные WAD файлы.
       </p>
 
     </section>

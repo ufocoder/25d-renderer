@@ -5,6 +5,8 @@ import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
 import render2d from './render2d';
 import defaultSettings from './settings';
+import RepoLink from '@app/components/RepoLink';
+import Label from '@app/components/Label';
 
 const code1 = `
   interface Vertex {
@@ -79,26 +81,26 @@ const Stage: Component = () => {
   return (
     <section class="flex flex-col gap-4">
       <p class="py-2 text">
-        Если вы не знали, то ранние шутеры <a class="link underline" href="https://en.wikipedia.org/wiki/Wolfenstein_3D">Wolfenstein 3D</a> и <a class="link underline" href="https://en.wikipedia.org/wiki/Doom_(1993_video_game)">DOOM</a> от компании <a class="link underline" href="https://en.wikipedia.org/wiki/Id_Software">Id software</a> были псевдо-трехмерными. Разработчики хитрым образом достраивали еще одно измерение на основе двумерной карты и проекции на воображаемый экран камеры. Поэтому вполне очевидно, что разработку необходимио начать с двумерной карты. Для этого нам потребуется ввести некоторые абстракции.
+        Если вы вдруг не знали или забыли, то ранние шутеры <a class="link underline" href="https://en.wikipedia.org/wiki/Wolfenstein_3D">Wolfenstein 3D</a> и <a class="link underline" href="https://en.wikipedia.org/wiki/Doom_(1993_video_game)">DOOM</a> от компании <a class="link underline" href="https://en.wikipedia.org/wiki/Id_Software">Id software</a> были псевдо-трехмерными. Разработчики особым образом достраивали еще одно измерение на основе двумерной карты и проекции на воображаемый экран камеры. Поэтому вполне очевидно, что разработку отрисовщика необходимио начать с реализации двумерной карты. Для этого нам потребуется ввести некоторые абстракции. 
       </p>
-      <p class="py-2 text">
-        Вершина и отрезок:
+      <p class="py-2 text">  
+        Введем такие сущности как <Label>Vertex</Label> (Вершина) и <Label>Linedef</Label> (Отрезок):
       </p>
       <CodeBlock code={code1} lang='ts'/>
       <p class="py-2 text">
-        Угол со вспомогательными методами:
+        Для работы с углами опишем класс <Label>Angle</Label> со вспомогательными методами:
       </p>
       <CodeBlock code={code2} lang='ts'/>
       <p class="py-2 text">
-        Камеру, которую мы планируем перемещать по карте: 
+        Опишем камеру, которую мы планируем перемещать по карте и на которую будет проекцировать будущее изображение: 
       </p>
       <CodeBlock code={code3} lang='ts'/>
       <p class="py-2 text">
-        Для каждой заметки добавим ее настройки, а именно камеру и набор линий:
+        Для каждого отрисовщика, а на странице их может быть несколько, добавим его настройки:
       </p>
       <CodeBlock code={code4} lang='ts' />
       <p class="py-2 text">
-        Также добавим вспомогательный виджет, который будет показывать камеру, ее угол обзора, уровень как множество линий. Если рядом с картой присутствуют элементы уравления, значит на этой странице можно управлять картой, например, перемещать камеру, приближать объекты на карте и прочее. Этот виджет будет сопровождать большинство заметок. 
+        Теперь добавим вспомогательный виджет, который будет показывать для карты сверху камеру, ее угол обзора и уровень как множество линий. Если рядом с картой будут присутствовать элементы уравления, значит на этой странице можно управлять картой, например, перемещать камеру, приближать объекты на карте и прочее. Этот виджет будет сопровождать большинство заметок.
       </p>
       <Map2d
         withZoom
@@ -109,7 +111,10 @@ const Stage: Component = () => {
         settings={settings}
         render={render2d} />
       <p class="py-2">
-        Если вы читаете эти заметки с мобильного устройства, то можете смело нажимать на все кнопки рядом с картой, если они здесь, значит они точно работают.
+        Кстати, если вы читаете эти заметки с мобильного устройства, то можете смело нажимать на все кнопки рядом с картой, если они есть рядом с картой, значит они точно должны работать.
+      </p>
+      <p class="my-2">
+        <RepoLink filePath="stages/Stage0b/render25d.ts">Реализация шага на github</RepoLink>
       </p>
     </section>
   );

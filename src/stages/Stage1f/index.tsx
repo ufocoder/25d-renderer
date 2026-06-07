@@ -8,6 +8,7 @@ import { createEffect, createSignal } from 'solid-js';
 import render25dstage1e from '../Stage1e/render25d';
 import defaultSettings from './settings';
 import { processLevel } from './utils';
+import Label from "@app/components/Label";
 
 const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
@@ -23,7 +24,7 @@ const Stage: Component = () => {
     <section class="flex flex-col gap-4">
 
       <p class="py-2 text">
-        Алгоритма художника никак не учитывает стены, пересекающие друг друга. В случае пересечения получаться так, что то одна стена рисуется поверх второй, то другая, в зависимости от положения камеры на карте.
+        Другая проблема <a href="https://ru.wikipedia.org/wiki/%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_%D1%85%D1%83%D0%B4%D0%BE%D0%B6%D0%BD%D0%B8%D0%BA%D0%B0" class="link underline" target="_blank">Алгоритма художника</a> — он никак не учитывает стены, пересекающие друг друга. В случае пересечения стен получится так, что то одна стена будет рисоваться поверх другой, то другая, в зависимости от положения камеры на карте.
       </p>
 
       <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
@@ -50,7 +51,7 @@ const Stage: Component = () => {
       </div>
 
       <p class="text py-2">
-        Чтобы исключить эту проблему, достаточно в месте пересчения линий разбивать их и тогда две песекающиеся линии дадут четыре новых.
+        Для решения достаточно определить вершину пересечение отрезков и разбить их относительно этой вершины:
       </p>
 
       <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
@@ -77,7 +78,7 @@ const Stage: Component = () => {
         </div>
       </div>
       <p class="text py-2">
-        Кстати, чтобы разделять такие линии в DOOM присутствует сущность Linedef и сущность Seg, то есть сегмент. Получается, что после построения уровня мы работаем с сегментами и само это понятия говорит об отсутствии пересечений.
+        Кстати, чтобы разделять такие линии в DOOM присутствует сущность <Label>Linedef</Label> и сущность <Label>Seg</Label>, то есть сегмент. В будущем мы будем оперировать сегментами вместо отрезков. Теперь получается, что после построения уровня мы работаем с сегментами и само это название натакливает нашу интуицию на отсутствии пересечений.
       </p>
       <p class="my-2">
         <RepoLink filePath="stages/Stage1f/render25d.ts">Реализация шага на github</RepoLink>

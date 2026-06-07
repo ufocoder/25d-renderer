@@ -6,6 +6,23 @@ import render25d from '@app/stages/Stage3d/render25d';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
 import defaultSettings from './settings';
+import CodeBlock from "@app/components/Code";
+
+
+const code1 = `
+  const outsideSector: Sector = {
+    // ..
+    floorHeight: 0,
+    ceilHeight: 10_000,
+  };
+
+  const insideSector: Sector = {
+    // ..
+    floorHeight: 2_000,
+    ceilHeight: 10_000,
+  };
+
+`;
 
 const Stage: Component = () => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
@@ -46,6 +63,10 @@ const Stage: Component = () => {
           </div>
         </div>
       </div>
+
+      <h2 class="text-2xl">Немного кода</h2>
+
+      <CodeBlock code={code1} lang="ts" />
 
     </section>
   );

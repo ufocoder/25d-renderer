@@ -12,7 +12,34 @@ import defaultSettings from './settings';
 import CodeBlock from "@app/components/Code";
 import Label from "@app/components/Label";
 
+
 const code1 = `
+  function projectionToPoints(
+    camera: Camera,
+    vertexProjectionStart: VertexProjection,
+    vertexProjectionEnd: VertexProjection,
+  ): Vertex[] {
+    const wallStartHeight = vertexProjectionStart.height;
+    const wallEndHeight = vertexProjectionEnd.height;
+    const horizontalHeight = camera.screen.height / 2;
+
+    return [
+      {
+        x: vertexProjectionStart.screenX,
+        y: horizontalHeight - wallStartHeight / 2,
+      },
+      {
+        x: vertexProjectionStart.screenX,
+        y: horizontalHeight + wallStartHeight / 2,
+      },
+      { x: vertexProjectionEnd.screenX, y: horizontalHeight + wallEndHeight / 2 },
+      { x: vertexProjectionEnd.screenX, y: horizontalHeight - wallEndHeight / 2 },
+    ];
+  }
+
+`;
+
+const code2 = `
   function render25d(
     ctx: CanvasRenderingContext2D,
     settings: Settings,
@@ -42,9 +69,12 @@ const Stage: Component = () => {
 
   return (
     <section class="flex flex-col gap-4">
-
-      <p class="text">Преобразование спроецированных точек в координаты многоугольника</p>
-
+      <p class="text">
+        На этом шаге мы можем воспользоваться следующей идеей: зная высоту предмета на конкретном расстоянии расстоянии, мы можешь найти его высоту на любом другом расстоянии, используя пропорцию. А зная высоту, мы можем получить коодринату Y для нижней и верхней части этого предмета.
+      </p>
+      <p class="text">
+        Таким образом, для каждой вершины из отрезка мы вычисляем расстояние, затем получаем два значения Y для его верхней и нижней части. Теперь, если соединить эти точки, то мы получим четырехугольник.
+      </p>
       <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
         <div class="flex flex-col gap-2">
           <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
@@ -68,7 +98,6 @@ const Stage: Component = () => {
           </div>
         </div>
       </div>
-
       <h2 class="text-2xl">Как это рассчитать</h2>
       <p class="py-2 text">
         Определим расстояние от позиции камеры до точки 
@@ -87,9 +116,13 @@ const Stage: Component = () => {
       </p>
       <h2 class="text-2xl">Немного кода</h2>
       <p class="py-2 text">
-        Ранее спроецированные точки мы достраиваем до четырехугольника:
+        Ранее спроецированные точки достраиваем до четырехугольника:
       </p>
       <CodeBlock code={code1} lang="ts" />
+      <p class="py-2 text">
+        И теперь на их основе рисуем многоугольник на экране:
+      </p>
+      <CodeBlock code={code2} lang="ts" />
       <p class="my-2">
         <RepoLink filePath="stages/Stage1b/render25d.ts">Реализация шага на github</RepoLink>
       </p>
