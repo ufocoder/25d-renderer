@@ -19,3 +19,17 @@ body {
 #app {
   min-height: 100vh;
 }
+
+pre.shiki,
+.code-block pre {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+pre.shiki code,
+.code-block pre code {
+  display: inline-block;
+  min-width: max-content;
+}

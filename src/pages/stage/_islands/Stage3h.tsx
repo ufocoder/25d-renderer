@@ -1,0 +1,49 @@
+import Canvas from "@app/components/Canvas/CanvasBase";
+import Map2d from '@app/components/Map2d';
+import { useCameraControls } from '@app/hooks/useCameraControls';
+import render2dStage0 from '@app/stages/Stage0b/render2d';
+import type { Component } from 'solid-js';
+import { createSignal } from 'solid-js';
+import render25d from '@app/stages/Stage3h/render25d';
+import defaultSettings from '@app/stages/Stage3h/settings';
+
+const Stage: Component = () => {
+  const [settings, setSettings] = createSignal<Settings>(defaultSettings);
+
+  useCameraControls<Settings>({ settings, setSettings, withVertical: true });
+
+  return (
+    <div class="flex flex-col gap-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="mt-4 flex flex-col">
+          <h2 class="text-2xl">2.5D Renderer</h2>
+        </div>
+        <div class="mb-2 mt-4">
+          <h2 class="text-2xl">2D Renderer</h2>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div class="grid gap-4">
+            <Canvas
+              settings={settings}
+              width={settings().camera.screen.width}
+              height={settings().camera.screen.height}
+              render={render25d}
+            />
+        </div>
+        <div>
+          <Map2d
+            withControls
+            withVertical
+            width={400}
+            height={400}
+            settings={settings}
+            render={render2dStage0} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Stage;

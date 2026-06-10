@@ -1,0 +1,16 @@
+---
+import PageLayout from '@app/layouts/PageLayout.astro';
+import Stage from '@app/pages/stage/_islands/Stage1b';
+import type { PageMetadata } from '@app/config/pages';
+
+export const metadata: PageMetadata = {
+  title: 'Проекция отрезков',
+  groupTitle: 'Stage 1: Отрисовка стен',
+};
+---
+
+<PageLayout>
+  <section class="flex flex-col gap-4">
+    <Stage client:load />
+  </section>
+</PageLayout>

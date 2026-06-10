@@ -1,0 +1,16 @@
+---
+import PageLayout from '@app/layouts/PageLayout.astro';
+import Stage from '@app/pages/stage/_islands/Stage3f';
+import type { PageMetadata } from '@app/config/pages';
+
+export const metadata: PageMetadata = {
+  title: 'Порталы 2D: соединяем сектора',
+  groupTitle: 'Stage 3: Binary Space Partition',
+};
+---
+
+<PageLayout>
+  <section class="flex flex-col gap-4">
+    <Stage client:load />
+  </section>
+</PageLayout>

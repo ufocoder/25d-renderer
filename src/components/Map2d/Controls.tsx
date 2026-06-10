@@ -26,7 +26,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
   };
 
   return (
-    <p class="font-normal text-gray-500 my-2 select-none">
+    <p class="my-2 flex flex-wrap items-center justify-center gap-1 font-normal text-gray-500 select-none">
       <span>Управление камерой </span>
       <kbd 
         class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
@@ -35,7 +35,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
         onContextMenu={(e) => e.preventDefault()}
       >
         W
-      </kbd>{" "}
+      </kbd>
       <kbd 
         class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
         onPointerDown={() => handleMouseDown('a')}
@@ -43,7 +43,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
         onContextMenu={(e) => e.preventDefault()}
       >
         A
-      </kbd>{" "}
+      </kbd>
       <kbd 
         class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
         onPointerDown={() => handleMouseDown('s')}
@@ -51,7 +51,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
         onContextMenu={(e) => e.preventDefault()}
       >
         S
-      </kbd>{" "}
+      </kbd>
       <kbd 
         class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
         onPointerDown={() => handleMouseDown('d')}
@@ -59,7 +59,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
         onContextMenu={(e) => e.preventDefault()}
       >
         D
-      </kbd>{" "}
+      </kbd>
       {withVertical && (
         <>
           <span> и </span>
@@ -70,7 +70,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
             onContextMenu={(e) => e.preventDefault()}
           >
             Z
-          </kbd>{" "}
+          </kbd>
           <kbd 
             class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
             onPointerDown={() => handleMouseDown('x')}

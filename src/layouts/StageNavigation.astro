@@ -1,0 +1,76 @@
+---
+import { getPrevNextLinks, withBase } from '@app/config/pages';
+
+type Props = {
+  currentPath: string;
+};
+
+const { currentPath } = Astro.props;
+const { previous, next } = getPrevNextLinks(currentPath);
+---
+
+{
+  (previous || next) && (
+    <nav class="mt-8 border-t border-[#d8deea] pt-6" aria-label="Навигация по этапам">
+      <div class="flex items-center justify-between gap-4">
+        {previous ? (
+          <a
+            href={withBase(previous.href)}
+            class="group flex items-center gap-3 py-3 pr-3 text-[#1f2a44] hover:text-blue-800"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="transition-transform group-hover:-translate-x-0.5"
+              aria-hidden="true"
+            >
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
+            <span class="flex flex-col items-start">
+              <span class="text-xs">{previous.groupTitle}</span>
+              <span class="text-sm font-medium">{previous.label}</span>
+            </span>
+          </a>
+        ) : (
+          <div class="invisible"></div>
+        )}
+
+        {next ? (
+          <a
+            href={withBase(next.href)}
+            class="group flex items-center gap-3 py-3 pl-3 text-[#1f2a44] hover:text-blue-800"
+          >
+            <span class="flex flex-col items-end text-right">
+              <span class="text-xs">{next.groupTitle}</span>
+              <span class="text-sm font-medium">{next.label}</span>
+            </span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="transition-transform group-hover:translate-x-0.5"
+              aria-hidden="true"
+            >
+              <path d="m9 18 6-6-6-6"></path>
+            </svg>
+          </a>
+        ) : (
+          <div class="invisible"></div>
+        )}
+      </div>
+    </nav>
+  )
+}

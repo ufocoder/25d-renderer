@@ -34,7 +34,7 @@ const CodeHighlight = (props: CodeBlockProps) => {
 export default function CodeBlock(props: CodeBlockProps) {
   return (
     <Suspense fallback={<div class="text-gray-400 p-4">Loading code...</div>}>
-      <CodeHighlight {...props} />
+      <CodeHighlight {...props} class={`code-block ${props.class ?? ''}`} />
     </Suspense>
   );
 };

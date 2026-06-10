@@ -1,4 +1,4 @@
-import Canvas from "@app/Canvas/CanvasBase";
+import Canvas from "@app/components/Canvas/CanvasBase";
 import Map2d from "@app/components/Map2d";
 import { useBspTree } from '@app/stages/Stage3a/hooks/useBspTree';
 import type { Component } from 'solid-js';
@@ -15,7 +15,7 @@ const Stage: Component = () => {
   useCameraControlsV3({ settings, setSettings, bspTree: bspTree() });
 
   return (
-    <section class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4">
 
       <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
         <div class="flex flex-col gap-2">
@@ -41,7 +41,7 @@ const Stage: Component = () => {
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 

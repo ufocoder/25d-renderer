@@ -1,4 +1,4 @@
-import Canvas, { type RendererProps } from "@app/Canvas/CanvasExtended";
+import Canvas, { type RendererProps } from "@app/components/Canvas/CanvasExtended";
 import { createSignal, onCleanup } from "solid-js";
 import KeyboardControls, { type KeyboardControlsProps } from "./Controls";
 
@@ -139,8 +139,8 @@ export default function Map2d({
   });
 
   return (
-    <div class="flex flex-col">
-      <div class="flex justify-center items-start gap-2">
+    <div class="flex w-full min-w-0 flex-col">
+      <div class="flex w-full min-w-0 justify-center">
         <div
           ref={(ref) => {
             containerRef = ref;
@@ -148,19 +148,20 @@ export default function Map2d({
               ref.addEventListener('wheel', handleWheel, { passive: false });
             }
           }}
-          class="relative"
+          class="relative max-w-full"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerCancel}
           style={{
+            width: `${width || settings().camera.screen.width}px`,
             cursor: isPanning() ? 'grabbing' : 'grab',
             'user-select': 'none',
             'touch-action': 'none'
           }}
         >
           <Canvas
-            className={canvasClassName}
+            className={`block h-auto max-w-full ${canvasClassName ?? ''}`}
             width={width || settings().camera.screen.width}
             height={height || settings().camera.screen.height}
             scale={scale}
@@ -170,26 +171,34 @@ export default function Map2d({
             render={render}
             translateToCenter
           />
+          {withZoom && (
+            <div
+              class="absolute right-2 top-2 z-10 flex flex-col gap-2"
+              onPointerDown={(e) => e.stopPropagation()}
+              onPointerMove={(e) => e.stopPropagation()}
+              onPointerUp={(e) => e.stopPropagation()}
+              style={{ cursor: 'default' }}
+            >
+              <button
+                type="button"
+                onClick={handleZoomIn}
+                class="h-8 w-8 cursor-pointer rounded border border-gray-400 bg-gray-100 text-sm font-semibold text-gray-800 shadow-sm transition-colors select-none hover:bg-gray-200"
+              >
+                +
+              </button>
+              <button
+                type="button"
+                onClick={handleZoomOut}
+                class="h-8 w-8 cursor-pointer rounded border border-gray-400 bg-gray-100 text-sm font-semibold text-gray-800 shadow-sm transition-colors select-none hover:bg-gray-200"
+              >
+                -
+              </button>
+            </div>
+          )}
         </div>
-        {withZoom && (
-          <div class="flex flex-col gap-2">
-            <button
-              onClick={handleZoomIn}
-              class="p-1.5 py-1 w-8 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
-            >
-              +
-            </button>
-            <button
-              onClick={handleZoomOut}
-              class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
-            >
-              -
-            </button>
-          </div>
-        )}
       </div>
       {withControls &&(
-        <div class="flex justify-center mt-1">
+        <div class="mt-1 flex min-w-0 justify-center">
           <KeyboardControls withVertical={withVertical} />
         </div>
       )}

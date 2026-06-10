@@ -1,0 +1,78 @@
+---
+import Drawer from '@app/layouts/Drawer.astro';
+import {
+  getPageHeader,
+  getPrevNextLinks,
+  normalizePathname,
+  withBase,
+} from '@app/config/pages';
+import StageNavigation from '@app/layouts/StageNavigation.astro';
+import '@app/style.css';
+
+const currentPath = normalizePathname(Astro.url.pathname);
+const header = getPageHeader(currentPath);
+const { next } = getPrevNextLinks(currentPath);
+const pageTitle = header
+  ? `${header.label ?? header.title} | 2.5D Renderer`
+  : '2.5D Renderer';
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <Drawer currentPath={currentPath} />
+
+    <div class="min-h-screen bg-[#f8faff]">
+      <div class="mx-auto w-full max-w-[1024px] px-4 py-6">
+        <div class="h-14 lg:hidden"></div>
+        <div class="flex min-h-[calc(100vh-3rem)] flex-col">
+          <main class="flex-1">
+            {
+              header && (
+                <div class="relative mb-6 border-b border-[#d8deea] pb-3">
+                  <div class="flex items-center justify-between gap-4">
+                    <div>
+                      {header.isLink ? (
+                        <>
+                          <p class="mb-1 text-sm text-[#6b7a8f]">{header.title}</p>
+                          <h1 class="text-3xl font-semibold text-[#1f2a44]">
+                            {header.label}
+                          </h1>
+                        </>
+                      ) : (
+                        <h1 class="text-3xl font-semibold text-[#1f2a44]">
+                          {header.title}
+                        </h1>
+                      )}
+                    </div>
+
+                    {next && (
+                      <div class="text-right">
+                        <a
+                          href={withBase(next.href)}
+                          class="inline-flex h-10 w-10 items-center justify-center text-2xl text-[#6b7a8f] transition-all hover:translate-x-0.5 hover:text-[#1f2a44]"
+                          aria-label="Следующий этап"
+                        >
+                          →
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            }
+            <slot />
+          </main>
+          <StageNavigation currentPath={currentPath} />
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,126 @@
+---
+import PageLayout from '@app/layouts/PageLayout.astro';
+import Stage from '@app/pages/stage/_islands/Stage0b';
+import type { PageMetadata } from '@app/config/pages';
+import { PROJECT_REPO_URL } from '@app/config/repo';
+import { codeToHtml } from 'shiki';
+
+export const metadata: PageMetadata = {
+  title: 'Двумерная карта',
+  groupTitle: 'Stage 0: Введение',
+};
+
+const labelClass = 'px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded';
+
+const code1 = `
+  interface Vertex {
+    x: number;
+    y: number;
+  }
+
+  interface Linedef {
+    start: Vertex;
+    end: Vertex;
+  }
+
+`;
+
+const code2 = `
+  class Angle {
+    private _degrees: number;
+
+    constructor(degrees: number) {
+      this._degrees = ((degrees % 360) + 360) % 360;
+    } 
+    
+    get degrees() {
+      return this._degrees;
+    }
+    
+    get radians() {
+      return this._degrees * Math.PI / 180;
+    }
+
+    get cos() {
+      return Math.cos(this.radians);
+    }
+
+    get sin() {
+      return Math.sin(this.radians);
+    }
+  }
+
+`;
+
+const code3 = `
+  interface Camera {
+    angle: Angle;
+    fov: Angle;
+    x: number;
+    y: number;
+    moveSpeed: number;
+    rotationSpeed: number;
+  }
+
+`;
+
+const code4 = `
+  interface Settings {
+    camera: Camera;
+    level: Level;
+  }
+
+  type Level = {
+    linedefs: Linedef[];
+  }
+
+`;
+
+const [code1Html, code2Html, code3Html, code4Html] = await Promise.all([
+  codeToHtml(code1, { lang: 'ts', theme: 'github-dark' }),
+  codeToHtml(code2, { lang: 'ts', theme: 'github-dark' }),
+  codeToHtml(code3, { lang: 'ts', theme: 'github-dark' }),
+  codeToHtml(code4, { lang: 'ts', theme: 'github-dark' }),
+]);
+---
+
+<PageLayout>
+  <section class="flex flex-col gap-4">
+    <p class="py-2 text">
+      Если вы вдруг не знали или забыли, то ранние шутеры <a class="link underline" href="https://en.wikipedia.org/wiki/Wolfenstein_3D">Wolfenstein 3D</a> и <a class="link underline" href="https://en.wikipedia.org/wiki/Doom_(1993_video_game)">DOOM</a> от компании <a class="link underline" href="https://en.wikipedia.org/wiki/Id_Software">Id software</a> были псевдо-трехмерными. Разработчики особым образом достраивали еще одно измерение на основе двумерной карты и проекции на воображаемый экран камеры. Поэтому вполне очевидно, что разработку отрисовщика необходимо начать с реализации двумерной карты. Для этого нам потребуется ввести некоторые абстракции.
+    </p>
+    <p class="py-2 text">
+      Введем такие сущности как <code class={labelClass}>Vertex</code> (Вершина) и <code class={labelClass}>Linedef</code> (Отрезок):
+    </p>
+    <div set:html={code1Html} />
+    <p class="py-2 text">
+      Для работы с углами опишем класс <code class={labelClass}>Angle</code> со вспомогательными методами:
+    </p>
+    <div set:html={code2Html} />
+    <p class="py-2 text">
+      Опишем камеру, которую мы планируем перемещать по карте и на которую будет проецироваться будущее изображение:
+    </p>
+    <div set:html={code3Html} />
+    <p class="py-2 text">
+      Для каждого отрисовщика, а на странице их может быть несколько, добавим его настройки:
+    </p>
+    <div set:html={code4Html} />
+    <p class="py-2 text">
+      Теперь добавим вспомогательный виджет, который будет показывать для карты сверху камеру, ее угол обзора и уровень как множество линий. Если рядом с картой будут присутствовать элементы уравнения, значит на этой странице можно управлять картой, например, перемещать камеру, приближать объекты на карте и прочее. Этот виджет будет сопровождать большинство заметок.
+    </p>
+    <Stage client:load />
+    <p class="py-2">
+      Кстати, если вы читаете эти заметки с мобильного устройства, то можете смело нажимать на все кнопки рядом с картой, если они есть рядом с картой, значит они точно должны работать.
+    </p>
+    <p class="my-2">
+      <a
+        href={`${PROJECT_REPO_URL}/stages/Stage0b/render25d.ts`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+      >
+        Реализация шага на github
+      </a>
+    </p>
+  </section>
+</PageLayout>

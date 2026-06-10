@@ -12,6 +12,10 @@ export function useCameraControls<T extends { camera: Camera }>({
   setSettings,
   withVertical = false,
 }: UseCameraControlsProps<T>) {
+  if (typeof document === "undefined") {
+    return;
+  }
+
   const [isRising, setRising] = createSignal(0);
   const [isMoving, setMoving] = createSignal(0);
   const [isRotating, setRotating] = createSignal(0);

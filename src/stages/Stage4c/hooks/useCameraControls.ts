@@ -20,6 +20,10 @@ export function useCameraControlsV4({
   bspTree,
   setSettings
 }: UseCameraControlsProps) {
+  if (typeof document === "undefined") {
+    return;
+  }
+
   const [isRising, setRising] = createSignal(0);
   const [isMoving, setMoving] = createSignal(0);
   const [isRotating, setRotating] = createSignal(0);
