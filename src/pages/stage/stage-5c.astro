@@ -1,16 +1,100 @@
 ---
 import PageLayout from '@app/layouts/PageLayout.astro';
-import Stage from '@app/pages/stage/_islands/Stage5c';
 import type { PageMetadata } from '@app/config/pages';
+import { PROJECT_REPO_URL } from '@app/config/repo';
+import { codeToHtml } from 'shiki';
 
 export const metadata: PageMetadata = {
   title: 'Буфер',
   groupTitle: 'Stage 5: Текстурирование',
 };
+
+const code1 = `
+  function drawPixel(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    color: Color
+  ): void {
+    ctx.fillStyle = \`rgb(\${color.r}, \${color.g}, \${color.b})\`;
+    ctx.fillRect(x, y, 1, 1);
+  }
+  
+`;
+
+const code2 = `
+  export function createRender25d({ bspTree }: { bspTree: BSPNode }) {
+    return function render25d(
+      ctx: CanvasRenderingContext2D,
+      settings: Settings,
+    ) {
+      const camera = settings.camera;
+      const buffer = ctx.createImageData(camera.screen.width, camera.screen.height);
+
+      for (let i = 0; i < buffer.data.length; i += 4) {
+        buffer.data[i] = 0
+        buffer.data[i + 1] = 0
+        buffer.data[i + 2] = 0
+        buffer.data[i + 3] = 255
+      }
+
+      // ..
+      traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
+        // ..
+        if (isPortal(seg)) {
+          drawPortalSegment(buffer, camera, seg, angles, wallRanges, upperClip, lowerClip);
+        } else {
+          drawSolidSegment(buffer, camera, seg, angles, wallRanges, upperClip, lowerClip);
+        }
+        // ..
+      });
+
+      ctx.putImageData(buffer, 0, 0);
+    }
+  }
+    
+`;
+
+const code3 = `
+  function drawPixel(
+    buffer: ImageData,
+    x: number,
+    y: number,
+    color: Color
+  ): void {
+    const index = (y * buffer.width + x) * 4;
+
+    buffer.data[index] = color.r;
+    buffer.data[index + 1] = color.g;
+    buffer.data[index + 2] = color.b;
+    buffer.data[index + 3] = 255;
+  }
+
+`;
+
+const [code1Html, code2Html, code3Html] = await Promise.all([
+  codeToHtml(code1, { lang: 'ts', theme: 'github-dark' }),
+  codeToHtml(code2, { lang: 'ts', theme: 'github-dark' }),
+  codeToHtml(code3, { lang: 'ts', theme: 'github-dark' }),
+]);
 ---
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <Stage client:load />
+    <p>
+      При работе с <code>CanvasRenderingContext2D</code> и многократных вызовах <code>fillRect</code> накапливаются накладные расходы.
+    </p>
+    <div set:html={code1Html} />
+    <p>
+      Лучше сделать одну дорогую операцию <code>putImageData</code>, чем миллион дешевых <code>fillRect</code>. Для этого создадим буфер и будем его передавать сквозь все функции вплоть до вызова <code>drawPixel</code>, а после вызовем <code>putImageData</code>.
+    </p>
+    <div set:html={code2Html} />
+    <p>
+      Внутри <code>drawPixel</code> заполняем буфер данными о необходимом пикселе.
+    </p>
+    <div set:html={code3Html} />
+    <p class="my-2">
+      <a href={`${PROJECT_REPO_URL}/stages/Stage5c/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
+    </p>
   </section>
 </PageLayout>

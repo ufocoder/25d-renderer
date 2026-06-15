@@ -7,45 +7,62 @@ import { createSignal } from 'solid-js';
 import render25d from '@app/stages/Stage2j/render25d';
 import defaultSettings from '@app/stages/Stage2j/settings';
 
-const Stage: Component = () => {
+interface StageProps {
+  part?: number;
+}
+
+const Stage: Component<StageProps> = (props) => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
 
   useCameraControls<Settings>({ settings, setSettings });
 
+  const renderPart = (part: number) => {
+    switch (part) {
+      case 0:
+        return (
+          <>
+            <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
+              <div class="flex flex-col gap-2">
+                <h2 class="flex justify-center text-2xl">
+                  2.5D Renderer
+                </h2>
+                <div class="flex justify-center">
+                  <Canvas
+                    settings={settings}
+                    width={settings().camera.screen.width}
+                    height={settings().camera.screen.height}
+                    render={render25d}
+                  />
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <h2 class="flex justify-center text-2xl">
+                  2D Renderer
+                </h2>
+                <div class="flex justify-center">
+                  <Map2d
+                    initialZoom={0.8}
+                    initialOffsetX={0}
+                    initialOffsetY={80}
+                    withControls
+                    width={400}
+                    height={320}
+                    settings={settings}
+                    render={render2d}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div class="flex flex-col gap-4">
-
-      <p class="py-2 text">
-         Трапециевидный клиппинг несовершен, необходим многоугольник. Используем алгоритм <a href="https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm" class="link underline" target="_blank">Сазерленда—Ходгмана</a> (1974?):
-      </p>
-
-      <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
-        <div class="flex flex-col gap-2">
-          <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
-          <div class="flex justify-center">
-            <Canvas
-              settings={settings}
-              width={settings().camera.screen.width}
-              height={settings().camera.screen.height}
-              render={render25d} />
-          </div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <h2 class="flex justify-center text-2xl">2D Renderer</h2>
-          <div class="flex justify-center">
-            <Map2d
-              initialZoom={0.8}
-              initialOffsetX={0}
-              initialOffsetY={80}
-              withControls
-              width={400}
-              height={320}
-              settings={settings}
-              render={render2d} />
-          </div>
-        </div>
-      </div>
-
+      {renderPart(props.part ?? 0)}
     </div>
   );
 };

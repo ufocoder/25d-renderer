@@ -2,15 +2,57 @@
 import PageLayout from '@app/layouts/PageLayout.astro';
 import Stage from '@app/pages/stage/_islands/Stage3f';
 import type { PageMetadata } from '@app/config/pages';
+import { codeToHtml } from 'shiki';
 
 export const metadata: PageMetadata = {
   title: 'Порталы 2D: соединяем сектора',
   groupTitle: 'Stage 3: Binary Space Partition',
 };
+
+const code1 = `
+  function render25d(
+    ctx: CanvasRenderingContext2D,
+    settings: Settings,
+  ) {
+    const camera = settings.camera;
+    const allSegments = settings.level.linedefs;
+    const bspTree = buildBSPTree(allSegments);
+  
+    const wallRanges = createSolidWallRanges(camera);
+    const upperClip = new Array(camera.screen.width).fill(-1);
+    const lowerClip = new Array(camera.screen.width).fill(camera.screen.height)
+  
+    traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
+      for (const seg of bspNode.segs) {
+        const sector = seg.frontSector!;
+  
+        const projection = projectSeg(camera, sector, seg);
+  
+        if (!projection) {
+          continue;
+        }
+  
+        if (isPortal(seg)) {
+          drawPortalSegment(ctx, camera, seg, projection, wallRanges, upperClip, lowerClip);
+        } else {
+          drawSolidSegment(ctx, camera, seg, projection, wallRanges, upperClip, lowerClip);
+        }
+      }
+    });
+  }
+  
+`;
+
+
+const code1Html = await codeToHtml(code1, { lang: 'ts', theme: 'github-dark' });
 ---
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <Stage client:load />
+    <Stage part={0} client:load />
+    <h2 class="text-2xl">
+      Немного кода
+    </h2>
+    <div set:html={code1Html} />
   </section>
 </PageLayout>

@@ -29,36 +29,38 @@ const Row: Component<RowProps> = ({ settings: defaultSettings }) => {
   const bspTree = useBspTree({ settings })
 
   return (
-      <div class="grid grid-cols-2 gap-4">
-        <Canvas
+          <div class="grid grid-cols-2 gap-4">
+            <Canvas
           width={400}
           height={400}
           settings={settings}
-          render={render2dStage0} />
-        <Canvas
+          render={render2dStage0}
+                        />
+            <Canvas
           width={400}
           height={400}
           settings={settings}
-          render={createRender2d(bspTree())} />
-      </div>
+          render={createRender2d(bspTree())}
+                        />
+          </div>
   );
 };
 
 const Stage: Component = () => {
   return (
-    <div class="flex flex-col gap-4">
-      <div class="grid grid-cols-2 gap-4">
-        <div class="mt-4 flex flex-col">
-          <h2 class="text-2xl">2.5D Renderer</h2>
-        </div>
-        <div class="mb-2 mt-4">
-          <h2 class="text-2xl">2D Renderer</h2>
-        </div>
-      </div>
-      {settingsSet.map(settings => (
-        <Row settings={settings} />
-      ))}
-    </div>
+          <div class="flex flex-col gap-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="mt-4 flex flex-col">
+                <h2 class="text-2xl">2.5D Renderer</h2>
+              </div>
+              <div class="mb-2 mt-4">
+                <h2 class="text-2xl">2D Renderer</h2>
+              </div>
+            </div>
+            {settingsSet.map(settings => (
+            <Row settings={settings} />
+            ))}
+          </div>
   );
 };
 

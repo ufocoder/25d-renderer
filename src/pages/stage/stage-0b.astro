@@ -87,7 +87,7 @@ const [code1Html, code2Html, code3Html, code4Html] = await Promise.all([
 <PageLayout>
   <section class="flex flex-col gap-4">
     <p class="py-2 text">
-      Если вы вдруг не знали или забыли, то ранние шутеры <a class="link underline" href="https://en.wikipedia.org/wiki/Wolfenstein_3D">Wolfenstein 3D</a> и <a class="link underline" href="https://en.wikipedia.org/wiki/Doom_(1993_video_game)">DOOM</a> от компании <a class="link underline" href="https://en.wikipedia.org/wiki/Id_Software">Id software</a> были псевдо-трехмерными. Разработчики особым образом достраивали еще одно измерение на основе двумерной карты и проекции на воображаемый экран камеры. Поэтому вполне очевидно, что разработку отрисовщика необходимо начать с реализации двумерной карты. Для этого нам потребуется ввести некоторые абстракции.
+      Если вы вдруг не знали или забыли, то ранние шутеры <a class="link underline" href="https://en.wikipedia.org/wiki/Wolfenstein_3D">Wolfenstein 3D</a> и <a class="link underline" href="https://en.wikipedia.org/wiki/Doom_(1993_video_game)">DOOM</a> от компании <a class="link underline" href="https://en.wikipedia.org/wiki/Id_Software">Id software</a> были псевдо-трехмерными. Разработчики особым образом достраивали еще одно измерение на основе двумерной карты и делали проекцию на воображаемый экран камеры. Поэтому вполне очевидно, что разработку отрисовщика необходимо начать с реализации двумерной карты. Для этого нам потребуется ввести некоторые абстракции.
     </p>
     <p class="py-2 text">
       Введем такие сущности как <code class={labelClass}>Vertex</code> (Вершина) и <code class={labelClass}>Linedef</code> (Отрезок):
@@ -98,7 +98,7 @@ const [code1Html, code2Html, code3Html, code4Html] = await Promise.all([
     </p>
     <div set:html={code2Html} />
     <p class="py-2 text">
-      Опишем камеру, которую мы планируем перемещать по карте и на которую будет проецироваться будущее изображение:
+      Опишем камеру, которую планируем перемещать по карте и на которую будет проецироваться будущее изображение:
     </p>
     <div set:html={code3Html} />
     <p class="py-2 text">
@@ -110,17 +110,10 @@ const [code1Html, code2Html, code3Html, code4Html] = await Promise.all([
     </p>
     <Stage client:load />
     <p class="py-2">
-      Кстати, если вы читаете эти заметки с мобильного устройства, то можете смело нажимать на все кнопки рядом с картой, если они есть рядом с картой, значит они точно должны работать.
+      Кстати, если вы читаете эти заметки с мобильного устройства, то можете смело нажимать на все кнопки рядом с картой. Если они есть рядом с картой, значит они точно должны работать.
     </p>
     <p class="my-2">
-      <a
-        href={`${PROJECT_REPO_URL}/stages/Stage0b/render25d.ts`}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-      >
-        Реализация шага на github
-      </a>
+      <a href={`${PROJECT_REPO_URL}/stages/Stage0b/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
     </p>
   </section>
 </PageLayout>

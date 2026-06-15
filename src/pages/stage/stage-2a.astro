@@ -2,15 +2,77 @@
 import PageLayout from '@app/layouts/PageLayout.astro';
 import Stage from '@app/pages/stage/_islands/Stage2a';
 import type { PageMetadata } from '@app/config/pages';
+import { codeToHtml } from 'shiki';
+import { PROJECT_REPO_URL } from '@app/config/repo';
 
 export const metadata: PageMetadata = {
   title: 'Уровень из секторов',
   groupTitle: 'Stage 2: Отрисовка секторов',
 };
+
+const codeSector = `
+  interface Sector {
+    segs: Seg[];
+  }
+
+  interface Seg extends Linedef {}
+
+`;
+
+const codeLinedefs = `
+  function render25d(
+    ctx: CanvasRenderingContext2D,
+    settings: Settings,
+  ) {
+    const camera = settings.camera;
+    // ..
+
+    settings.level.linedefs.forEach(function(linedef, index) {
+      const projection = projectLinedef(camera, linedef);
+      // ..
+
+`;
+
+const codeSectors = `
+  function render25d(
+    ctx: CanvasRenderingContext2D,
+    settings: Settings,
+  ) {
+    const camera = settings.camera;
+    // ..
+
+    settings.level.sectors!.forEach(function(sector) {
+      sector.segs.forEach(function(seg, index) {
+        const projection = projectLinedef(camera, seg);
+        // ...
+
+`;
+
+const codeSectorHtml = await codeToHtml(codeSector, { lang: 'ts', theme: 'github-dark' });
+const codeLinedefsHtml = await codeToHtml(codeLinedefs, { lang: 'ts', theme: 'github-dark' });
+const codeSectorsHtml = await codeToHtml(codeSectors, { lang: 'ts', theme: 'github-dark' });
 ---
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <Stage client:load />
+    <p class="py-2 text">
+      Может показаться не совсем интуитивным шагом, но давайте введем такое понятие как сектор и пусть это будет множество стен, которые образуют замкнутый многоугольник при виде сверху.
+    </p>
+    <p class="py-2 text">
+      Также вместо <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">Linedef</code> будем использовать <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">Seg</code>, поскольку линия может быть разбита на сегменты.
+    </p>
+    <div set:html={codeSectorHtml} />
+    <Stage part={0} client:load />
+    <p class="py-2 text">
+      И если раньше мы строили проекции на основе множества <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">Linedef</code> из уровня:
+    </p>
+    <div set:html={codeLinedefsHtml} />
+    <p class="py-2 text">
+      То теперь строим на основе множества <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">Seg</code>, которое содержит каждый сектор:
+    </p>
+    <div set:html={codeSectorsHtml} />
+    <p class="my-2">
+      <a href={`${PROJECT_REPO_URL}/stages/Stage2a/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
+    </p>
   </section>
 </PageLayout>

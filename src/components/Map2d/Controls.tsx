@@ -29,7 +29,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
     <p class="my-2 flex flex-wrap items-center justify-center gap-1 font-normal text-gray-500 select-none">
       <span>Управление камерой </span>
       <kbd 
-        class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
+        class="px-2 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
         onPointerDown={() => handleMouseDown('w')}
         onPointerUp={() => handleMouseUp('w')}
         onContextMenu={(e) => e.preventDefault()}
@@ -37,7 +37,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
         W
       </kbd>
       <kbd 
-        class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
+        class="px-2 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
         onPointerDown={() => handleMouseDown('a')}
         onPointerUp={() => handleMouseUp('a')}
         onContextMenu={(e) => e.preventDefault()}
@@ -45,7 +45,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
         A
       </kbd>
       <kbd 
-        class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
+        class="px-2 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
         onPointerDown={() => handleMouseDown('s')}
         onPointerUp={() => handleMouseUp('s')}
         onContextMenu={(e) => e.preventDefault()}
@@ -53,7 +53,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
         S
       </kbd>
       <kbd 
-        class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
+        class="px-2 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
         onPointerDown={() => handleMouseDown('d')}
         onPointerUp={() => handleMouseUp('d')}
         onContextMenu={(e) => e.preventDefault()}
@@ -64,7 +64,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
         <>
           <span> и </span>
           <kbd 
-            class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
+            class="px-2 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
             onPointerDown={() => handleMouseDown('z')}
             onPointerUp={() => handleMouseUp('z')}
             onContextMenu={(e) => e.preventDefault()}
@@ -72,7 +72,7 @@ export default function KeyboardControls({ withVertical }: KeyboardControlsProps
             Z
           </kbd>
           <kbd 
-            class="p-1.5 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
+            class="px-2 py-1 text-sm font-semibold text-gray-800 bg-gray-100 border border-gray-400 rounded cursor-pointer hover:bg-gray-200 transition-colors select-none"
             onPointerDown={() => handleMouseDown('x')}
             onPointerUp={() => handleMouseUp('x')}
             onContextMenu={(e) => e.preventDefault()}

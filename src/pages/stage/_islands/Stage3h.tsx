@@ -7,41 +7,50 @@ import { createSignal } from 'solid-js';
 import render25d from '@app/stages/Stage3h/render25d';
 import defaultSettings from '@app/stages/Stage3h/settings';
 
-const Stage: Component = () => {
+interface StageProps {
+  part?: number;
+}
+
+const Stage: Component<StageProps> = (props) => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
 
   useCameraControls<Settings>({ settings, setSettings, withVertical: true });
 
+  const renderPart = (part: number) => {
+    switch (part) {
+      case 0:
+        return (
+          <>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="grid gap-4">
+                <Canvas
+                  settings={settings}
+                  width={settings().camera.screen.width}
+                  height={settings().camera.screen.height}
+                  render={render25d}
+                />
+              </div>
+              <div>
+                <Map2d
+                  withControls
+                  withVertical
+                  width={400}
+                  height={400}
+                  settings={settings}
+                  render={render2dStage0}
+                />
+              </div>
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div class="flex flex-col gap-4">
-      <div class="grid grid-cols-2 gap-4">
-        <div class="mt-4 flex flex-col">
-          <h2 class="text-2xl">2.5D Renderer</h2>
-        </div>
-        <div class="mb-2 mt-4">
-          <h2 class="text-2xl">2D Renderer</h2>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div class="grid gap-4">
-            <Canvas
-              settings={settings}
-              width={settings().camera.screen.width}
-              height={settings().camera.screen.height}
-              render={render25d}
-            />
-        </div>
-        <div>
-          <Map2d
-            withControls
-            withVertical
-            width={400}
-            height={400}
-            settings={settings}
-            render={render2dStage0} />
-        </div>
-      </div>
+      {renderPart(props.part ?? 0)}
     </div>
   );
 };

@@ -2,15 +2,83 @@
 import PageLayout from '@app/layouts/PageLayout.astro';
 import Stage from '@app/pages/stage/_islands/Stage2b';
 import type { PageMetadata } from '@app/config/pages';
+import { codeToHtml } from 'shiki';
+import { PROJECT_REPO_URL } from '@app/config/repo';
 
 export const metadata: PageMetadata = {
   title: 'Разные высоты у секторов',
   groupTitle: 'Stage 2: Отрисовка секторов',
 };
+
+const code1 = `
+  interface Sector {
+    // ..
+    height: number;
+  }
+
+`;
+
+const code2 = `
+  function createCircleLines(
+    centerX: number,
+    centerY: number,
+    radius: number,
+    segments: number = 36,
+  ): Seg[] {
+    // ..
+  }
+
+  const sector1 = {
+    height: 10_000,
+    segs: createCircleLines(150, 130, 85, 8)
+  };
+
+  const sector2 = {
+    height: 7_500,
+    segs: createCircleLines(150, 130, 10, 10)
+  };
+
+  const sector3 = {
+    height: 5_000,
+    segs: createCircleLines(150, 130, 15, 10)
+  };
+
+  const sector4 = {
+    height: 2_500,
+    segs: createCircleLines(150, 130, 20, 10)
+  };
+
+  const level: Level = {
+    linedefs: [
+      ...sector1.segs, 
+      ...sector2.segs,
+      ...sector3.segs, 
+      ...sector4.segs,
+    ],
+    sectors: [sector1, sector2, sector3, sector4]
+  };
+`;
+
+const code1Html = await codeToHtml(code1, { lang: 'ts', theme: 'github-dark' });
+const code2Html = await codeToHtml(code2, { lang: 'ts', theme: 'github-dark' });
 ---
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <Stage client:load />
+    <p class="px-2 text">
+      Добавим в описание каждого сектора высоту:
+    </p>
+    <div set:html={code1Html} />
+    <p class="px-2 text">
+      Затем попробуем построить проекцию по аналогии с прошлым шагом:
+    </p>
+    <Stage part={0} client:load />
+    <p class="px-2 text">
+      Для примера выше используем следующее описание:
+    </p>
+    <div set:html={code2Html} />
+    <p class="my-2">
+      <a href={`${PROJECT_REPO_URL}/stages/Stage2a/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
+    </p>
   </section>
 </PageLayout>

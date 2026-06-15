@@ -2,15 +2,100 @@
 import PageLayout from '@app/layouts/PageLayout.astro';
 import Stage from '@app/pages/stage/_islands/Stage1d2';
 import type { PageMetadata } from '@app/config/pages';
+import { codeToHtml } from 'shiki';
+import { PROJECT_REPO_URL } from '@app/config/repo';
 
 export const metadata: PageMetadata = {
   title: 'Отсечение: учитываем угол камеры',
   groupTitle: 'Stage 1: Отрисовка стен',
 };
+
+const code1 = `
+    function caclulateScaleFactor(
+      screenX: number,
+      linedef: Linedef,
+      camera: Camera
+    ): number {
+      const distance = distanceToLinedef(linedef, camera);
+      const screenXAngle = angleFromScreenX(screenX, camera);
+    
+      const wallDir = toAngle(linedef.end, linedef.start);
+      const wallNormal = new Angle(wallDir.degrees + 90);
+    
+      const viewAngle = camera.angle.degrees + screenXAngle.degrees;
+      const skewAngle = new Angle(viewAngle - wallNormal.degrees);
+      const skewAngleCos = Math.abs(skewAngle.cos);
+    
+      const screenXAngleCos = Math.abs(screenXAngle.cos);
+      
+      return (distance * skewAngleCos) / (distance * screenXAngleCos);
+    }
+
+`;
+
+
+const code2 = `
+  function projectLinedef(camera: Camera, linedef: Linedef) : LinedefProjection | null {
+    const angles = calculateIntersectionAngles(linedef, camera);
+
+    if (angles === null) {
+      return null;
+    }
+
+    const distanceToCamera = distanceToLinedef(linedef, camera)
+
+    const startScreenX = angles.linedefFrom < angles.cameraFrom 
+      ? 0 
+      : toScreenX(angles.linedefFrom, angles, camera);
+      
+    const endScreenX = angles.linedefTo > angles.cameraTo
+      ? camera.screen.width 
+      : toScreenX(angles.linedefTo, angles, camera);
+
+    const startScale = caclulateScaleFactor(startScreenX, linedef, camera);
+    const endScale = caclulateScaleFactor(endScreenX, linedef, camera);
+
+    return {
+      start: {
+        screenX: startScreenX,
+        height: WALL_HEIGHT * startScale / distanceToCamera
+      },
+      end: {
+        screenX: endScreenX,
+        height: WALL_HEIGHT * endScale / distanceToCamera
+      }
+    };
+  }
+
+`;
+
+
+const code1Html = await codeToHtml(code1, { lang: 'ts', theme: 'github-dark' });
+const code2Html = await codeToHtml(code2, { lang: 'ts', theme: 'github-dark' });
 ---
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <Stage client:load />
+    <p class="py-text">
+      В прошлом примере стены были расположены так, что всегда были повернуты лицом к камере. Если расположить стены по-другому, например, как на демо ниже и слева, то можно заметить, что ранее реализованная линейная интерполяция не работает.
+    </p>
+    <p class="py-text">
+      Здесь необходимо учитывать угол между стеной и направлением взгляда, чтобы создать правильное перспективное искажение. Поэтому мы введем специальный коэффициент, <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">scale factor</code>, учитывающий ориентацию стены относительно луча зрения.
+    </p>
+    <Stage part={0} client:load />
+    <h2 class="text-2xl">
+      Как это рассчитать
+    </h2>
+    <p class="py-2 text">
+      Коэффициент, во сколько раз нужно изменить базовую высоту из-за угла обзора стены:
+    </p>
+    <div set:html={code1Html} />
+    <p class="py-2 text">
+      Обновим функцию расчета проекции:
+    </p>
+    <div set:html={code2Html} />
+    <p class="my-2">
+      <a href={`${PROJECT_REPO_URL}/stages/Stage1d2/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
+    </p>
   </section>
 </PageLayout>

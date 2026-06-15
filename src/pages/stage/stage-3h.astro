@@ -11,6 +11,18 @@ export const metadata: PageMetadata = {
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <Stage client:load />
+    <div class="grid grid-cols-2 gap-4">
+      <div class="mt-4 flex flex-col">
+        <h2 class="text-2xl">
+          2.5D Renderer
+        </h2>
+      </div>
+      <div class="mb-2 mt-4">
+        <h2 class="text-2xl">
+          2D Renderer
+        </h2>
+      </div>
+    </div>
+    <Stage part={0} client:load />
   </section>
 </PageLayout>

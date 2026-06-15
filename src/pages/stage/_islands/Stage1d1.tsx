@@ -1,7 +1,5 @@
 import Canvas from "@app/components/Canvas/CanvasBase";
-import CodeBlock from "@app/components/Code";
 import Map2d from '@app/components/Map2d';
-import RepoLink from "@app/components/RepoLink";
 import { useCameraControls } from '@app/hooks/useCameraControls';
 import render2d from '@app/stages/Stage0b/render2d';
 import type { Component } from 'solid-js';
@@ -9,153 +7,266 @@ import { createSignal } from 'solid-js';
 import render25d from '@app/stages/Stage1d1/render25d';
 import defaultSettings from '@app/stages/Stage1d1/settings';
 
-const code1 = `
-  function render25d(
-    ctx: CanvasRenderingContext2D,
-    settings: Settings,
-  ) {
-    const camera = settings.camera;
+type AngleRangeCase = {
+  title: string;
+  linedefFrom: number;
+  linedefTo: number;
+};
 
-    for (const linedef of settings.level.linedefs) {
-      const projection = projectLinedef(camera, linedef);
+const angleRangeCases: AngleRangeCase[] = [
+  {
+    title: 'Отрезок полностью в FOV',
+    linedefFrom: -22,
+    linedefTo: 20,
+  },
+  {
+    title: 'Отрезок вне FOV',
+    linedefFrom: 52,
+    linedefTo: 92,
+  },
+  {
+    title: 'Отрезок пересекает один край FOV',
+    linedefFrom: -52,
+    linedefTo: 12,
+  },
+  {
+    title: 'Отрезок пересекает оба края FOV',
+    linedefFrom: -62,
+    linedefTo: 62,
+  },
+];
 
-      if (!projection) {
-        continue;
-      }
-      
-      drawPolygon(ctx, projectionToPoints(camera, projection));
-    }
+const cameraRange = {
+  from: -34,
+  to: 34,
+};
+
+const ANGLE_ROTATION = -90;
+
+function toRadians(degrees: number) {
+  return degrees * Math.PI / 180;
+}
+
+function toCanvasRadians(degrees: number) {
+  return toRadians(degrees + ANGLE_ROTATION);
+}
+
+function drawArc(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+  from: number,
+  to: number,
+  color: string,
+  lineWidth = 7,
+) {
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.lineCap = 'round';
+  ctx.arc(x, y, radius, toCanvasRadians(from), toCanvasRadians(to));
+  ctx.stroke();
+}
+
+function drawGrid(ctx: CanvasRenderingContext2D) {
+  const width = ctx.canvas.width;
+  const height = ctx.canvas.height;
+  const gridSize = 40;
+
+  ctx.save();
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.strokeStyle = '#e0e0e0';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([]);
+
+  for (let x = 0; x <= width; x += gridSize) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
+    ctx.stroke();
   }
 
-`;
-
-const code2 = `
-  interface IntersectionAngles {
-    linedefFrom: number;
-    linedefTo: number;
-    cameraFrom: number;
-    cameraTo: number;
+  for (let y = 0; y <= height; y += gridSize) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
   }
 
-  function calculateIntersectionAngles(linedef: Linedef, camera: Camera): null | IntersectionAngles {
-    // ..
-  }
+  ctx.restore();
+}
 
-`;
+function drawAngleLine(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+  angle: number,
+  color: string,
+  dashed = false,
+) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.setLineDash(dashed ? [5, 5] : []);
+  ctx.moveTo(x, y);
+  ctx.lineTo(
+    x + Math.cos(toCanvasRadians(angle)) * radius,
+    y + Math.sin(toCanvasRadians(angle)) * radius,
+  );
+  ctx.stroke();
+  ctx.restore();
+}
 
-const code3 = `
-  function projectLinedef(camera: Camera, linedef: Linedef) : LinedefProjection | null {
-    const angles = calculateIntersectionAngles(linedef, camera);
+function drawAngleRangeLine(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+  from: number,
+  to: number,
+) {
+  ctx.save();
+  ctx.strokeStyle = '#111827';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(
+    x + Math.cos(toCanvasRadians(from)) * radius,
+    y + Math.sin(toCanvasRadians(from)) * radius,
+  );
+  ctx.lineTo(
+    x + Math.cos(toCanvasRadians(to)) * radius,
+    y + Math.sin(toCanvasRadians(to)) * radius,
+  );
+  ctx.stroke();
+  ctx.restore();
+}
 
-    if (angles === null) {
-      return null;
+function drawCamera(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  ctx.save();
+  ctx.fillStyle = 'red';
+  ctx.beginPath();
+  ctx.arc(x, y, 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawAngleRangeCase(item: AngleRangeCase) {
+  return (ctx: CanvasRenderingContext2D) => {
+    const centerX = ctx.canvas.width / 2;
+    const centerY = 220;
+    const radius = 104;
+
+    drawGrid(ctx);
+
+    ctx.save();
+    ctx.strokeStyle = '#c0c0c0';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(centerX, 0);
+    ctx.lineTo(centerX, ctx.canvas.height);
+    ctx.stroke();
+    ctx.restore();
+
+    drawAngleLine(ctx, centerX, centerY, radius + 58, cameraRange.from, 'red', true);
+    drawAngleLine(ctx, centerX, centerY, radius + 58, cameraRange.to, 'red', true);
+
+    drawAngleLine(ctx, centerX, centerY, radius + 36, item.linedefFrom, '#f97316');
+    drawAngleLine(ctx, centerX, centerY, radius + 36, item.linedefTo, '#f97316');
+
+    drawAngleRangeLine(ctx, centerX, centerY, radius + 24, item.linedefFrom, item.linedefTo);
+    drawArc(ctx, centerX, centerY, radius, -85, 85, '#e5e7eb', 2);
+    drawArc(ctx, centerX, centerY, radius, cameraRange.from, cameraRange.to, 'rgba(255, 0, 0, 0.45)', 2);
+    drawArc(ctx, centerX, centerY, radius + 24, item.linedefFrom, item.linedefTo, '#f97316', 2);
+
+    const intersectionFrom = Math.max(cameraRange.from, item.linedefFrom);
+    const intersectionTo = Math.min(cameraRange.to, item.linedefTo);
+
+    if (intersectionFrom < intersectionTo) {
+      drawArc(ctx, centerX, centerY, radius - 22, intersectionFrom, intersectionTo, '#16a34a', 2);
     }
 
-    const relativeAngleStart = new Angle(angles.linedefFrom - camera.angle.degrees);
+    drawCamera(ctx, centerX, centerY);
+  };
+}
 
-    const distanceStart = toDistance(linedef.start, camera) * Math.abs(relativeAngleStart.cos);
-    const distanceEnd = toDistance(linedef.end, camera) * Math.abs(relativeAngleEnd.cos);
+interface StageProps {
+  part?: number;
+}
 
-    const heightStart = WALL_HEIGHT / distanceStart;
-    const heightEnd = WALL_HEIGHT / distanceEnd;
-
-    const isLinedefStartHeigher = heightStart > heightEnd;
-    const linedefMinHeight = Math.min(heightStart, heightEnd);
-    const linedefDiffHeight = Math.abs(heightStart - heightEnd);
-    const linedefAngleRange = angles.linedefTo - angles.linedefFrom;
-
-    let start;
-
-    if (angles.linedefFrom < angles.cameraFrom) {
-      const percent = (angles.cameraFrom - angles.linedefFrom) / linedefAngleRange;
-      const k = isLinedefStartHeigher ? (1 - percent) : percent;
-
-      start = {
-        screenX: 0,
-        height: linedefMinHeight + linedefDiffHeight * k
-      }
-    } else {
-      start = {
-        screenX: toScreenX('linedefFrom', angles, camera),
-        height: heightStart
-      }
-    }
-
-    // ..
-
-`;
-
-const Stage: Component = () => {
+const Stage: Component<StageProps> = (props) => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
 
   useCameraControls<Settings>({ settings, setSettings });
 
+  const renderPart = (part: number) => {
+    switch (part) {
+      case 0:
+        return (
+          <>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {angleRangeCases.map((item) => (
+                <div class="flex flex-col items-center gap-2">
+                  <p class="text-center text-sm font-semibold text-gray-700">
+                    {item.title}
+                  </p>
+                  <Canvas
+                    className="block h-auto max-w-full"
+                    settings={settings}
+                    width={400}
+                    height={320}
+                    render={drawAngleRangeCase(item)}
+                  />
+                </div>
+              ))}
+            </div>
+          </>
+        );
+      case 1:
+        return (
+          <>
+            <div class="flex flex-col justify-center gap-6 justify-items md:grid md:grid-cols-2 md:gap-4 md:items-start">
+              <div class="flex flex-col gap-2">
+                <h2 class="flex justify-center text-2xl">
+                  2.5D Renderer
+                </h2>
+                <div class="flex justify-center">
+                  <Canvas
+                    settings={settings}
+                    width={settings().camera.screen.width}
+                    height={settings().camera.screen.height}
+                    render={render25d}
+                  />
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <h2 class="flex justify-center text-2xl">
+                  2D Renderer
+                </h2>
+                <div class="flex justify-center">
+                  <Map2d
+                    withControls
+                    settings={settings}
+                    render={render2d}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div class="flex flex-col gap-4">
-      <p class="py-2 text">
-        Мы воспринимали мир как набор спроецированных вершин, и если хотя бы одна вершина не попадала в область видимости, то мы полностью исключали отрезок из отрисовки. Нам необходимо перейти к тому пониманию, что мир это множество спроецированных отрезков.
-      </p>
-      <CodeBlock code={code1} lang="ts" />
-      <p class="py-2 text">
-        Теперь поставим задачу по-другому: <span class="font-semibold">необходимо отрисовывать только то, что попадает в область видимости.</span>
-      </p>  
-
-      <p class="py-2 text">
-        Может быть несколько вариантов того, как отрезок связан с областью видимости:
-      </p>
-
-      <ul class="list-inside list-disc">
-        <li>Отрезок полностью попадает в область видимости</li>
-        <li>Отрезок не полностью попадает в область видимости</li>
-        <li>Отрезок пересекает область видимости по левому или правому краю</li>
-        <li>Отрезок пересекает область видимости по левому и правому краю</li>
-      </ul>
-
-      <p class="py-2 text">
-        Как идея, перейдем к полярным координатам и будем рассматривать область видимости и отрезок как диапазоны значений в полярных координатах, то есть как диапазоны углов. Это позволит нам учесть все вышеописанные ситуации. Здесь мы можем определить функцию, которая возвращает те самые диапазоны углов, если отрезок попадает в область видимости.
-      </p>
-      <p class="py-2 text">
-        К сожалению, у меня получилась большая реализация, поэтому для изучения функции обратитесь к <a  class="link underline" href="https://github.com/ufocoder/25d-renderer/blob/main/src/stages/Stage1d1/render25d.ts#L42" target="_blank">ее исходному коду</a>
-      </p>
-
-      <p class="py-2 text">
-        Если отрезок пересекает край области видимости, то используем диапазоны углов и рассчитываем, какую часть диапазона углов для отрезка занимает точка пересечения с областью видимости. Получаем коэффициент от 0 до 1. Этот коэффициент мы будем использовать, чтобы домножать высоту отрезка. Как именно смотри код ниже или читай исходный код шага.
-      </p>
-      <div class="my-10 flex flex-col justify-center gap-6 justify-items md:grid md:grid-cols-2 md:gap-4 md:items-start">
-        <div class="flex flex-col gap-2">
-          <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
-          <div class="flex justify-center">
-            <Canvas
-              settings={settings}
-              width={settings().camera.screen.width}
-              height={settings().camera.screen.height}
-              render={render25d}
-            />
-          </div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <h2 class="flex justify-center text-2xl">2D Renderer</h2>
-          <div class="flex justify-center">
-            <Map2d
-              withControls
-              settings={settings}
-              render={render2d}
-            />
-          </div>
-        </div>
-      </div>
-      <h2 class="text-2xl">Немного кода</h2>
-      <p class="py-2 text">
-        Добавим несколько вспомогательных функций, основная из которых позволяет получить значения в полярных координатах, а именно нормализованное значение углов для области видимости и для спроецированного отрезка:
-      </p>
-      <CodeBlock code={code2} lang="ts" />
-      <p class="py-2 text"> 
-        Рассчитаем процент видимой части диапазона углов для проекции относительно всего диапазона и используем этот процент для вычисления высоты в точке пересечения:
-      </p>
-      <CodeBlock code={code3} lang="ts" />
-      <p class="my-2">
-        <RepoLink filePath="stages/Stage1d1/render25d.ts">Реализация шага на github</RepoLink>
-      </p>
+    <div class="my-10 flex flex-col gap-4">
+      {renderPart(props.part ?? 0)}
     </div>
   );
 };

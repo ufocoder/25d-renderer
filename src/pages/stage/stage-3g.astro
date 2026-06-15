@@ -2,15 +2,41 @@
 import PageLayout from '@app/layouts/PageLayout.astro';
 import Stage from '@app/pages/stage/_islands/Stage3g';
 import type { PageMetadata } from '@app/config/pages';
+import { codeToHtml } from 'shiki';
 
 export const metadata: PageMetadata = {
   title: 'Разные высоты секторов: проблема',
   groupTitle: 'Stage 3: Binary Space Partition',
 };
+
+const code1 = `
+  const outsideSector: Sector = {
+    // ..
+    floorHeight: 0,
+    ceilHeight: 10_000,
+  };
+
+  const insideSector: Sector = {
+    // ..
+    floorHeight: 2_000,
+    ceilHeight: 10_000,
+  };
+
+`;
+
+
+const code1Html = await codeToHtml(code1, { lang: 'ts', theme: 'github-dark' });
 ---
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <Stage client:load />
+    <p class="py-2 text">
+      Необходима поддержка отрисовки разности высот секторов
+    </p>
+    <Stage part={0} client:load />
+    <h2 class="text-2xl">
+      Немного кода
+    </h2>
+    <div set:html={code1Html} />
   </section>
 </PageLayout>

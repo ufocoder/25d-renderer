@@ -2,15 +2,87 @@
 import PageLayout from '@app/layouts/PageLayout.astro';
 import Stage from '@app/pages/stage/_islands/Stage5e';
 import type { PageMetadata } from '@app/config/pages';
+import { codeToHtml } from 'shiki';
+import { PROJECT_REPO_URL } from '@app/config/repo';
 
 export const metadata: PageMetadata = {
   title: 'Уровень освещения секторов',
   groupTitle: 'Stage 5: Текстурирование',
 };
+
+const code1 = `
+  interface Sector {
+    // ...
+    brightness?: number;
+  }
+
+`;
+
+
+const code2 = `
+  function applyBrightness(color: Color, brightness: number = 1): Color {
+    if (brightness >= 1.0) {
+      return color;
+    }
+
+    return {
+      r: Math.min(255, Math.floor(color.r * brightness)),
+      g: Math.min(255, Math.floor(color.g * brightness)),
+      b: Math.min(255, Math.floor(color.b * brightness))
+    };
+  }
+`;
+
+
+const code3 = `
+  function drawTexturedFloorCeil(...) {
+    // ..
+    drawPixel(buffer, x, y, applyBrightness(color, sector.brightness));
+    // ..
+  }
+
+  function drawSolidSegment(...) {
+    // ..
+    drawPixel(buffer, x, y, applyBrightness(color, sector.brightness));
+    // ..
+  }
+
+  function drawPortalSegment(...) {
+    // ..
+    drawPixel(buffer, x, y, applyBrightness(color, otherSector.brightness));
+    // ..
+  }
+`;
+
+
+const code1Html = await codeToHtml(code1, { lang: 'ts', theme: 'github-dark' });
+const code2Html = await codeToHtml(code2, { lang: 'ts', theme: 'github-dark' });
+const code3Html = await codeToHtml(code3, { lang: 'ts', theme: 'github-dark' });
 ---
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <Stage client:load />
+    <Stage part={0} client:load />
+    <h2 class="text-2xl">
+      Как это сделать
+    </h2>
+    <p class="py-2">
+      Добавим уровень освещенности в описание сектора
+    </p>
+    <div set:html={code1Html} />
+    <p class="py-2">
+      Опишем очень простую функцию для вычисления уровня освещенности
+    </p>
+    <div set:html={code2Html} />
+    <p class="py-2">
+      Теперь достаточно обернуть рассчитанные значения цвета пикселей в <code>applyBrightness</code>:
+    </p>
+    <div set:html={code3Html} />
+    <p class="py-2">
+      Как видите, это дешевый в реализации, но довольно яркий эффект.
+    </p>
+    <p class="my-2">
+      <a href={`${PROJECT_REPO_URL}/stages/Stage5e/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
+    </p>
   </section>
 </PageLayout>

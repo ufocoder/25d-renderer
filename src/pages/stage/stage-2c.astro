@@ -2,15 +2,63 @@
 import PageLayout from '@app/layouts/PageLayout.astro';
 import Stage from '@app/pages/stage/_islands/Stage2c';
 import type { PageMetadata } from '@app/config/pages';
+import { codeToHtml } from 'shiki';
+import { PROJECT_REPO_URL } from '@app/config/repo';
 
 export const metadata: PageMetadata = {
   title: 'Нормализация высот секторов',
   groupTitle: 'Stage 2: Отрисовка секторов',
 };
+
+const code1 = `
+  interface Sector {
+    // ..
+    ceilHeight: number;
+    floorHeight: number;
+  }
+
+`;
+
+const code2 = `
+  function projectLinedef(
+    camera: Camera, 
+    sector: Sector,
+    linedef: Linedef
+  ): LinedefProjection | null {
+    // ..
+    return {
+      start: {
+        // ..
+        topY: horizontalCenter - (sector.ceilHeight! * startScale / distanceToCamera),
+        bottomY: horizontalCenter + (sector.floorHeight! * startScale / distanceToCamera)
+      },
+      end: {
+        // ..
+        topY: horizontalCenter - (sector.ceilHeight! * endScale / distanceToCamera),
+        bottomY: horizontalCenter + (sector.floorHeight! * endScale / distanceToCamera)
+      }
+    };
+  }
+
+`;
+
+const code1Html = await codeToHtml(code1, { lang: 'ts', theme: 'github-dark' });
+const code2Html = await codeToHtml(code2, { lang: 'ts', theme: 'github-dark' });
 ---
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <Stage client:load />
+    <Stage part={0} client:load />
+    <p class="my-2">
+      Определим уровень пола и потолка для каждого сектора
+    </p>
+    <div set:html={code1Html} />
+    <p class="my-2">
+      Будем учитывать эти уровни при расчете проекции сегмента. До мы считали высоту, сейчас Y-координаты для проекции
+    </p>
+    <div set:html={code2Html} />
+    <p class="my-2">
+      <a href={`${PROJECT_REPO_URL}/stages/Stage2c/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
+    </p>
   </section>
 </PageLayout>

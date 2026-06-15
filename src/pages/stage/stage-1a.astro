@@ -2,15 +2,111 @@
 import PageLayout from '@app/layouts/PageLayout.astro';
 import Stage from '@app/pages/stage/_islands/Stage1a';
 import type { PageMetadata } from '@app/config/pages';
+import { codeToHtml } from 'shiki';
+import { PROJECT_REPO_URL } from '@app/config/repo';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 
 export const metadata: PageMetadata = {
   title: 'Проекция вершин',
   groupTitle: 'Stage 1: Отрисовка стен',
 };
+
+const code1 = `
+  function render25d(ctx: CanvasRenderingContext2D, settings: Settings) {
+    const camera = settings.camera;
+    for (const linedef of settings.level.linedefs) {
+      for (const vertex of [linedef.start, linedef.end]) {
+        const screenX = projectVertexToScreen(vertex, camera);
+        if (screenX == null) {
+          continue;
+        }
+        ctx.fillStyle = "black";
+        ctx.fillRect(screenX, 0, 1, screen.height);
+      }
+    }
+  }
+
+`;
+
+
+const code2 = `
+  function projectVertexToScreen(vertex: Vertex, camera: Camera) {
+    const vertexAngle = toAngle(vertex, camera).degrees;
+    const cameraAngleFrom = camera.angle.degrees - camera.fov.degrees / 2;
+    const cameraAngleTo = camera.angle.degrees + camera.fov.degrees / 2;
+
+    if (cameraAngleTo < vertexAngle || vertexAngle < cameraAngleFrom) {
+      return null;
+    }
+
+    return (
+      ((vertexAngle - cameraAngleFrom) / camera.fov.degrees) * camera.screen.width
+    );
+  }
+
+`;
+
+
+const code1Html = await codeToHtml(code1, { lang: 'ts', theme: 'github-dark' });
+const code2Html = await codeToHtml(code2, { lang: 'ts', theme: 'github-dark' });
+
+const renderFormula = (latex: string) => katex.renderToString(latex, {
+  displayMode: true,
+  throwOnError: false,
+  output: 'html',
+  fleqn: false,
+  leqno: false,
+});
 ---
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <Stage client:load />
+    <p class="py-2 text">
+      Самое тяжелое в проектировании — это определить базовый набор идей и абстракций. И честно говоря, в свое время мне было тяжело понять, какой шаг нужно было сделать первым, пока не познакомился с заметками <a class="link underline" href="https://github.com/amroibrahim/DIYDoom/tree/master/DIYDOOM/Notes011/notes" target="_blank">DIYDoom</a>, а в частности с тем, как необходимо сделать <a class="link underline" href="https://github.com/amroibrahim/DIYDoom/tree/master/DIYDOOM/Notes011/notes" target="_blank">горизонтальную проекцию</a>.
+    </p>
+    <p class="py-2 text">
+      На этом шаге необходимо сделать проекцию вершины на камеру в виде вертикальной линии.
+    </p>
+    <Stage part={0} client:load />
+    <h2 class="text-2xl">
+      Как это рассчитать
+    </h2>
+    <p class="py-2 text">
+      Введем условные обозначения:
+    </p>
+    <div class="bg-gray-100 border border-gray-200 p-4 text my-2">
+      <div set:html={renderFormula("\\Delta x = x_{\\text{vertex}} - x_{\\text{camera}}")} />
+      <div set:html={renderFormula("\\Delta y = y_{\\text{vertex}} - y_{\\text{camera}}")} />
+      <div set:html={renderFormula("\\theta_{\\text{fov}} \\text{ — угол поля обзора камеры (FOV)}")} />
+      <div set:html={renderFormula("W \\text{ — ширина экрана в пикселях}")} />
+    </div>
+    <p class="py-2 text">
+      Вычисляем угол между направлением камеры и вершиной на карте
+    </p>
+    <div class="bg-gray-100 border border-gray-200 p-4 text my-2">
+      <div set:html={renderFormula("\\theta_v = \\operatorname{arctan2}(\\Delta y, \\Delta x) \\cdot \\frac{180}{\\pi}")} />
+    </div>
+    <p class="py-2 text">
+      Если угол входит в поле обзора камеры, мы линейно преобразуем его относительное положение внутри области видимости в координату X на экране:
+    </p>
+    <div class="bg-gray-100 border border-gray-200 p-4 text my-2">
+      <div set:html={renderFormula("\\theta_{\\min} = \\theta_{\\text{cam}} - \\frac{\\theta_{\\text{fov}}}{2}")} />
+      <div set:html={renderFormula("\\text{screenX} = \\frac{\\theta_v - \\theta_{\\text{min}}}{\\theta_{\\text{fov}}} \\cdot W")} />
+    </div>
+    <h2 class="text-2xl">
+      Немного кода
+    </h2>
+    <p class="py-2 text">
+      Получившийся мир для нас — это множество спроецированных точек в виде вертикальных линий:
+    </p>
+    <div set:html={code1Html} />
+    <p class="py-2 text">
+      Проекция вершины на экран:
+    </p>
+    <div set:html={code2Html} />
+    <p class="py-2 text">
+      <a href={`${PROJECT_REPO_URL}/stages/Stage1a/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
+    </p>
   </section>
 </PageLayout>

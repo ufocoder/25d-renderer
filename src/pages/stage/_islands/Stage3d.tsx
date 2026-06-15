@@ -6,78 +6,63 @@ import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
 import render2d from '@app/stages/Stage0b/render2d';
 import render25d from '@app/stages/Stage3d/render25d';
-import CodeBlock from "@app/components/Code";
 
-const code1 = `
- function render25d(
-    ctx: CanvasRenderingContext2D,
-    settings: Settings,
-  ) {
-    const camera = settings.camera;
-    const allSegments = settings.level.linedefs;
-    const bspTree = buildBSPTree(allSegments);
-    const solidWallRanges = createSolidWallRanges(camera);
+interface StageProps {
+  part?: number;
+}
 
-    traverseBSPTree(bspTree, camera, (bspNode: BSPLeaf) => {
-      for (const seg of bspNode.segs) {
-        const sector = seg.frontSector!;
-
-        const projection = projectSeg(camera, sector, seg);
-
-        if (!projection) {
-          continue;
-        }
-
-        drawSolidWall(ctx, camera, seg, projection, solidWallRanges);
-      }
-    });
-  }
-
-`;
-
-const Stage: Component = () => {
+const Stage: Component<StageProps> = (props) => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
 
   useCameraControls<Settings>({ settings, setSettings });
 
+  const renderPart = (part: number) => {
+    switch (part) {
+      case 0:
+        return (
+          <>
+            <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
+              <div class="flex flex-col gap-2">
+                <h2 class="flex justify-center text-2xl">
+                  2.5D Renderer
+                </h2>
+                <div class="flex justify-center">
+                  <Canvas
+                    settings={settings}
+                    width={settings().camera.screen.width}
+                    height={settings().camera.screen.height}
+                    render={render25d}
+                  />
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <h2 class="flex justify-center text-2xl">
+                  2D Renderer
+                </h2>
+                <div class="flex justify-center">
+                  <Map2d
+                    initialZoom={0.6}
+                    initialOffsetX={75}
+                    initialOffsetY={50}
+                    withControls
+                    width={400}
+                    height={320}
+                    settings={settings}
+                    render={render2d}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div class="flex flex-col gap-4">
-
-      <p class="py-2 text">
-        Отрисуем снова внутренний сектор с обычными сегментами
-      </p>
-
-      <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
-        <div class="flex flex-col gap-2">
-          <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
-          <div class="flex justify-center">
-            <Canvas
-              settings={settings}
-              width={settings().camera.screen.width}
-              height={settings().camera.screen.height}
-              render={render25d} />
-          </div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <h2 class="flex justify-center text-2xl">2D Renderer</h2>
-          <div class="flex justify-center">
-            <Map2d
-              initialZoom={0.6}
-              initialOffsetX={75}
-              initialOffsetY={50}
-              withControls
-              width={400}
-              height={320}
-              settings={settings}
-              render={render2d} />
-          </div>
-        </div>
-      </div>
-
-      <h2 class="text-2xl">Немного кода</h2>
-
-      <CodeBlock code={code1} lang="ts" />
-
+      {renderPart(props.part ?? 0)}
     </div>
   );
 };

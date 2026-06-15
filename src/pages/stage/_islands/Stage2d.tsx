@@ -1,6 +1,5 @@
 import Canvas from "@app/components/Canvas/CanvasBase";
 import Map2d from "@app/components/Map2d";
-import RepoLink from "@app/components/RepoLink";
 import { useCameraControls } from '@app/hooks/useCameraControls';
 import render2d from '@app/stages/Stage0b/render2d';
 import type { Component } from 'solid-js';
@@ -8,44 +7,59 @@ import { createSignal } from 'solid-js';
 import render25dStage2d from '@app/stages/Stage2d/render25d';
 import defaultSettings from '@app/stages/Stage2d/settings';
 
-const Stage: Component = () => {
+interface StageProps {
+  part?: number;
+}
+
+const Stage: Component<StageProps> = (props) => {
   const [settings, setSettings] = createSignal<Settings>(defaultSettings);
 
   useCameraControls<Settings>({ settings, setSettings });
 
+  const renderPart = (part: number) => {
+    switch (part) {
+      case 0:
+        return (
+          <>
+            <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
+              <div class="flex flex-col gap-2">
+                <h2 class="flex justify-center text-2xl">
+                  2.5D Renderer
+                </h2>
+                <div class="flex justify-center">
+                  <Canvas
+                    settings={settings}
+                    width={settings().camera.screen.width}
+                    height={settings().camera.screen.height}
+                    render={render25dStage2d}
+                  />
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <h2 class="flex justify-center text-2xl">
+                  2D Renderer
+                </h2>
+                <div class="flex justify-center">
+                  <Map2d
+                    withControls
+                    width={400}
+                    height={320}
+                    settings={settings}
+                    render={render2d}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div class="flex flex-col gap-4">
-
-      <p>Зная координаты вершин стены, достроим вертикальные линии — получим пол и потолок</p>
-
-      <div class="my-10 flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
-        <div class="flex flex-col gap-2">
-          <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
-          <div class="flex justify-center">
-            <Canvas
-              settings={settings}
-              width={settings().camera.screen.width}
-              height={settings().camera.screen.height}
-              render={render25dStage2d}
-              />
-          </div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <h2 class="flex justify-center text-2xl">2D Renderer</h2>
-          <div class="flex justify-center">
-            <Map2d
-                withControls
-                width={400}
-                height={320}
-                settings={settings}
-                render={render2d} />
-          </div>
-        </div>
-      </div>
-
-      <p class="my-2">
-        <RepoLink filePath="stages/Stage2d/render25d.ts">Реализация шага на github</RepoLink>
-      </p>
+      {renderPart(props.part ?? 0)}
     </div>
   );
 };

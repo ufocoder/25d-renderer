@@ -48,6 +48,7 @@ function pagePathToHref(path: string) {
 
 function pageSortRank(href: string) {
   if (href === '/') return 0;
+  if (href === '/preface') return 0.5;
   if (href.startsWith('/stage/')) return 1;
   if (href === '/demo') return 2;
   return 3;

@@ -15,6 +15,9 @@ const { next } = getPrevNextLinks(currentPath);
 const pageTitle = header
   ? `${header.label ?? header.title} | 2.5D Renderer`
   : '2.5D Renderer';
+const serviceWorkerUrl = withBase('/sw.js');
+const serviceWorkerScope = withBase('/');
+const enableServiceWorker = import.meta.env.PROD;
 ---
 
 <!doctype html>
@@ -74,5 +77,14 @@ const pageTitle = header
         </div>
       </div>
     </div>
+    <script define:vars={{ enableServiceWorker, serviceWorkerScope, serviceWorkerUrl }}>
+      if (enableServiceWorker && 'serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register(serviceWorkerUrl, {
+            scope: serviceWorkerScope,
+          });
+        });
+      }
+    </script>
   </body>
 </html>
