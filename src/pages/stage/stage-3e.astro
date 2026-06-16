@@ -1,5 +1,6 @@
 ---
 import PageLayout from '@app/layouts/PageLayout.astro';
+import InDevelopmentGate from '@app/pages/_components/InDevelopmentGate.astro';
 import Stage from '@app/pages/stage/_islands/Stage3e';
 import type { PageMetadata } from '@app/config/pages';
 import { codeToHtml } from 'shiki';
@@ -90,6 +91,7 @@ const code3Html = await codeToHtml(code3, { lang: 'ts', theme: 'github-dark' });
 ---
 
 <PageLayout>
+  <InDevelopmentGate />
   <section class="flex flex-col gap-4">
     <Stage part={0} client:load />
     <h2 class="text-2xl">

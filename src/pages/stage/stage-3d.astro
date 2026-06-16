@@ -1,5 +1,6 @@
 ---
 import PageLayout from '@app/layouts/PageLayout.astro';
+import InDevelopmentGate from '@app/pages/_components/InDevelopmentGate.astro';
 import Stage from '@app/pages/stage/_islands/Stage3d';
 import type { PageMetadata } from '@app/config/pages';
 import { codeToHtml } from 'shiki';
@@ -41,6 +42,7 @@ const code1Html = await codeToHtml(code1, { lang: 'ts', theme: 'github-dark' });
 ---
 
 <PageLayout>
+  <InDevelopmentGate />
   <section class="flex flex-col gap-4">
     <p class="py-2 text">
       Отрисуем снова внутренний сектор с обычными сегментами

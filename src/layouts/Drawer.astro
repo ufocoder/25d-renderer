@@ -15,11 +15,43 @@ const { currentPath } = Astro.props;
 const menuEntries = getMenuEntries();
 ---
 
+<div
+  data-mobile-menu
+  class="fixed inset-x-0 top-0 z-40 border-b border-[#d8deea] bg-white/95 px-4 py-3 shadow-[0_1px_3px_rgba(31,42,68,0.08)] backdrop-blur transition-transform duration-200 lg:hidden"
+>
+  <div class="flex items-center justify-between gap-3">
+    <button
+      type="button"
+      aria-label="Открыть меню"
+      data-drawer-open
+      class="inline-flex items-center rounded-lg border border-[#d8deea] bg-white p-2 text-[#1f2a44] transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#9eb3da]"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <line x1="4" x2="20" y1="12" y2="12"></line>
+        <line x1="4" x2="20" y1="6" y2="6"></line>
+        <line x1="4" x2="20" y1="18" y2="18"></line>
+      </svg>
+    </button>
+    <span class="text-base font-semibold text-[#1f2a44]">2.5D Renderer</span>
+  </div>
+</div>
+
 <button
   type="button"
   aria-label="Открыть меню"
   data-drawer-open
-  class="fixed left-4 top-4 z-40 rounded-lg border border-[#d8deea] bg-white p-2.5 text-[#1f2a44] transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#9eb3da]"
+  class="fixed left-4 top-4 z-40 hidden rounded-lg border border-[#d8deea] bg-white p-2.5 text-[#1f2a44] transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#9eb3da] lg:inline-flex"
 >
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -158,12 +190,21 @@ const menuEntries = getMenuEntries();
 <script>
   const drawer = document.querySelector('[data-drawer]');
   const panel = document.querySelector('[data-drawer-panel]');
-  const openButton = document.querySelector('[data-drawer-open]');
+  const openButtons = document.querySelectorAll('[data-drawer-open]');
   const closeButtons = document.querySelectorAll('[data-drawer-close]');
+  const mobileMenu = document.querySelector('[data-mobile-menu]');
+  let lastScrollY = window.scrollY;
+  let isDrawerOpen = false;
+
+  const showMobileMenu = () => {
+    mobileMenu?.classList.toggle('-translate-y-full', false);
+    lastScrollY = window.scrollY;
+  };
 
   const setDrawerOpen = (isOpen: boolean) => {
     if (!drawer || !panel) return;
 
+    isDrawerOpen = isOpen;
     drawer.classList.toggle('pointer-events-auto', isOpen);
     drawer.classList.toggle('pointer-events-none', !isOpen);
     drawer.querySelector('[data-drawer-close]')?.classList.toggle('opacity-50', isOpen);
@@ -171,6 +212,7 @@ const menuEntries = getMenuEntries();
     panel.classList.toggle('translate-x-0', isOpen);
     panel.classList.toggle('-translate-x-full', !isOpen);
     document.body.style.overflow = isOpen ? 'hidden' : '';
+    showMobileMenu();
   };
 
   const syncGroup = (button: Element) => {
@@ -184,11 +226,27 @@ const menuEntries = getMenuEntries();
     icon?.classList.toggle('rotate-180', isExpanded);
   };
 
-  openButton?.addEventListener('click', () => setDrawerOpen(true));
+  openButtons.forEach((button) => {
+    button.addEventListener('click', () => setDrawerOpen(true));
+  });
   closeButtons.forEach((button) => {
     button.addEventListener('click', () => setDrawerOpen(false));
   });
 
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (!mobileMenu || isDrawerOpen) return;
+
+      const currentScrollY = window.scrollY;
+      const isScrollingDown = currentScrollY > lastScrollY;
+      const shouldHide = isScrollingDown && currentScrollY > 64;
+
+      mobileMenu.classList.toggle('-translate-y-full', shouldHide);
+      lastScrollY = currentScrollY;
+    },
+    { passive: true },
+  );
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       setDrawerOpen(false);

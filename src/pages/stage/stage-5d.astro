@@ -1,5 +1,6 @@
 ---
 import PageLayout from '@app/layouts/PageLayout.astro';
+import InDevelopmentGate from '@app/pages/_components/InDevelopmentGate.astro';
 import Stage from '@app/pages/stage/_islands/Stage5d';
 import type { PageMetadata } from '@app/config/pages';
 
@@ -10,6 +11,7 @@ export const metadata: PageMetadata = {
 ---
 
 <PageLayout>
+  <InDevelopmentGate />
   <section class="flex flex-col gap-4">
     <Stage client:load />
   </section>

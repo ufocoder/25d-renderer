@@ -29,9 +29,12 @@ export type PageHeader = {
   isLink: boolean;
 };
 
-const pageModules = import.meta.glob<PageModule>('../pages/**/*.astro', {
-  eager: true,
-});
+const pageModules = import.meta.glob<PageModule>(
+  ['../pages/**/*.astro', '!../pages/**/_components/**/*.astro'],
+  {
+    eager: true,
+  },
+);
 
 function pagePathToHref(path: string) {
   const pagePath = path

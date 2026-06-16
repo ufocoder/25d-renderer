@@ -1,5 +1,6 @@
 ---
 import PageLayout from '@app/layouts/PageLayout.astro';
+import InDevelopmentGate from '@app/pages/_components/InDevelopmentGate.astro';
 import Stage from '@app/pages/stage/_islands/Stage3b';
 import type { PageMetadata } from '@app/config/pages';
 
@@ -10,6 +11,7 @@ export const metadata: PageMetadata = {
 ---
 
 <PageLayout>
+  <InDevelopmentGate />
   <section class="flex flex-col gap-4">
     <p class="py-2 text">
       Мы не можем нарисовать сектор в секторе, но мы можем разбить сектора таким образом, чтобы на уровне не было внутренних секторов. Благодаря реализации этой идеи прославился в свое время Джон Кармак, а именно тем, что стал использовать алгоритм Binary Space Partition.

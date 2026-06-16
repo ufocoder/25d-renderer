@@ -1,0 +1,60 @@
+---
+import { withBase } from '@app/config/pages';
+
+type Props = {
+  message?: string;
+};
+
+const {
+  message = 'Данная страница еще в разработке, уверены, что хотите ознакомиться?',
+} = Astro.props;
+---
+
+<div
+  class="fixed inset-0 z-50 grid place-items-center bg-[#1f2a44]/25 px-4 backdrop-blur-sm"
+  data-development-gate
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="development-gate-title"
+>
+  <div class="w-full max-w-md border border-[#c3d0ea] bg-white p-6 text-center shadow-xl">
+    <p id="development-gate-title" class="text-lg font-semibold text-[#1f2a44]">
+      {message}
+    </p>
+    <div class="mt-6 flex flex-wrap justify-center gap-3">
+      <a
+        class="inline-flex h-10 items-center justify-center border border-[#c3d0ea] px-4 text-sm font-medium text-[#4a5a75] transition-colors hover:bg-[#e3ebfa]"
+        href={withBase('/')}
+      >
+        вернуться
+      </a>
+      <button
+        class="inline-flex h-10 items-center justify-center border border-[#9eb3da] bg-[#dce6fa] px-4 text-sm font-medium text-[#1f2a44] transition-colors hover:bg-[#c8d8f5]"
+        type="button"
+        data-development-gate-confirm
+      >
+        уверен
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const gates = document.querySelectorAll('[data-development-gate]');
+
+  const syncScrollLock = () => {
+    document.body.style.overflow = document.querySelector('[data-development-gate]')
+      ? 'hidden'
+      : '';
+  };
+
+  gates.forEach((gate) => {
+    const button = gate.querySelector('[data-development-gate-confirm]');
+    button?.addEventListener('click', () => {
+      gate.remove();
+      syncScrollLock();
+    });
+  });
+
+  syncScrollLock();
+</script>
