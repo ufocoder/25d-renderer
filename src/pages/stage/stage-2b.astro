@@ -12,7 +12,7 @@ export const metadata: PageMetadata = {
 
 const code1 = `
   interface Sector {
-    // ..
+    segs: Seg[];
     height: number;
   }
 
@@ -66,17 +66,20 @@ const code2Html = await codeToHtml(code2, { lang: 'ts', theme: 'github-dark' });
 <PageLayout>
   <section class="flex flex-col gap-4">
     <p class="px-2 text">
-      Добавим в описание каждого сектора высоту:
+      Добавим в описание сектора идею, что все стены будут иметь одинаковую высоту:
     </p>
     <div set:html={code1Html} />
     <p class="px-2 text">
-      Затем попробуем построить проекцию по аналогии с прошлым шагом:
+      Затем, используя ранее созданную проекцию, попробуем отрисовать уровень:
     </p>
     <Stage part={0} client:load />
     <p class="px-2 text">
-      Для примера выше используем следующее описание:
+      Для примера выше используем следующее описание уровня:
     </p>
     <div set:html={code2Html} />
+    <p class="px-2 text">
+      В описании уровня продолжаем хранить <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">level.linedefs</code> для отрисовки 2D-уровня.
+    </p>
     <p class="my-2">
       <a href={`${PROJECT_REPO_URL}/stages/Stage2a/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
     </p>

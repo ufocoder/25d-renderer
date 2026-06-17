@@ -59,7 +59,7 @@ const codeSectorsHtml = await codeToHtml(codeSectors, { lang: 'ts', theme: 'gith
       Может показаться не совсем интуитивным шагом, но давайте введем такое понятие как сектор и пусть это будет множество стен, которые образуют замкнутый многоугольник при виде сверху.
     </p>
     <p class="py-2 text">
-      Также вместо <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">Linedef</code> будем использовать <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">Seg</code>, поскольку линия может быть разбита на сегменты.
+      Также вместо понятия отрезок <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">Linedef</code> будем использовать понятие сегмент <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">Seg</code>, поскольку линия может быть разбита на сегменты. И с точки зрения кода сектор будем описывать как можество сегментов:
     </p>
     <div set:html={codeSectorHtml} />
     <Stage part={0} client:load />
@@ -71,6 +71,9 @@ const codeSectorsHtml = await codeToHtml(codeSectors, { lang: 'ts', theme: 'gith
       То теперь строим на основе множества <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">Seg</code>, которое содержит каждый сектор:
     </p>
     <div set:html={codeSectorsHtml} />
+    <p class="py-2 text">
+      Поскольку мы не знаем какова геометрия сектора, то продолжаем также сортировать стены по расстоянию до их отрисовки.
+    </p>
     <p class="my-2">
       <a href={`${PROJECT_REPO_URL}/stages/Stage2a/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
     </p>

@@ -12,7 +12,7 @@ export const metadata: PageMetadata = {
 
 const code1 = `
   interface Sector {
-    // ..
+    segs: Seg[];
     ceilHeight: number;
     floorHeight: number;
   }
@@ -48,16 +48,19 @@ const code2Html = await codeToHtml(code2, { lang: 'ts', theme: 'github-dark' });
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <Stage part={0} client:load />
-    <p class="my-2">
-      Определим уровень пола и потолка для каждого сектора
+    <p class="py-2 text">
+      Сейчас мы рисуем стены относительно линии горизонта и откладываем половину высоты сектора вниз и вверх по оси Y. Чтобы исправить это, определим уровень пола и потолка для каждого сектора:
     </p>
     <div set:html={code1Html} />
-    <p class="my-2">
-      Будем учитывать эти уровни при расчете проекции сегмента. До мы считали высоту, сейчас Y-координаты для проекции
+    <p class="py-2 text">
+      При расчете проекции сегментов будем учитывать эти уровни:
+    </p>
+    <Stage part={0} client:load />
+    <p class="py-2 text">
+      И если до этого мы считали высоту сектора и только потом вычисляли Y-координаты четырехугольника, то сейчас будем считать Y-координаты для проекции сразу:
     </p>
     <div set:html={code2Html} />
-    <p class="my-2">
+    <p class="py-2 text">
       <a href={`${PROJECT_REPO_URL}/stages/Stage2c/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
     </p>
   </section>
