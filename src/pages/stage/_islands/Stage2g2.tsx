@@ -3,15 +3,71 @@ import Map2d from '@app/components/Map2d';
 import render2d from '@app/stages/Stage0b/render2d';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
-import render25d from '@app/stages/Stage2g2/render25d';
+import render25d, { type Stage2g2Animation } from '@app/stages/Stage2g2/render25d';
 import defaultSettings from '@app/stages/Stage2g2/settings';
 
 interface StageProps {
   part?: number;
 }
 
+type Stage2g2Settings = Settings & {
+  animation: Stage2g2Animation;
+};
+
 const Stage: Component<StageProps> = (props) => {
-  const [settings] = createSignal<Settings>(defaultSettings);
+  let runId = 0;
+  let nextStep: (() => void) | null = null;
+
+  const [settings, setSettings] = createSignal<Stage2g2Settings>({
+    ...defaultSettings,
+    animation: {
+      delay: 1_000,
+      isActive: (id) => id === runId,
+      mode: 'step',
+      runId,
+      waitForNextStep: () =>
+        new Promise<void>((resolve) => {
+          nextStep = resolve;
+        }),
+    },
+  });
+
+  const resolveNextStep = () => {
+    nextStep?.();
+    nextStep = null;
+  };
+
+  const updateAnimation = (mode: Stage2g2Animation['mode']) => {
+    resolveNextStep();
+    runId += 1;
+
+    setSettings((prevSettings) => ({
+      ...prevSettings,
+      animation: {
+        delay: 1_000,
+        isActive: (id) => id === runId,
+        mode,
+        runId,
+        waitForNextStep: () =>
+          new Promise<void>((resolve) => {
+            nextStep = resolve;
+          }),
+      },
+    }));
+  };
+
+  const playFullAnimation = () => {
+    updateAnimation('auto');
+  };
+
+  const playNextStep = () => {
+    if (settings().animation.mode === 'step' && nextStep) {
+      resolveNextStep();
+      return;
+    }
+
+    updateAnimation('step');
+  };
 
   const renderPart = (part: number) => {
     switch (part) {
@@ -30,6 +86,22 @@ const Stage: Component<StageProps> = (props) => {
                     height={settings().camera.screen.height}
                     render={render25d}
                   />
+                </div>
+                <div class="flex flex-wrap justify-center gap-2">
+                  <button
+                    type="button"
+                    class="border border-[#9eb3da] bg-[#dce6fa] px-4 py-2 text-sm font-medium text-[#1f2a44] transition-colors hover:bg-[#c8d8f5]"
+                    onClick={playFullAnimation}
+                  >
+                    Запустить всю анимацию
+                  </button>
+                  <button
+                    type="button"
+                    class="border border-[#9eb3da] bg-[#dce6fa] px-4 py-2 text-sm font-medium text-[#1f2a44] transition-colors hover:bg-[#c8d8f5]"
+                    onClick={playNextStep}
+                  >
+                    Следующий шаг
+                  </button>
                 </div>
               </div>
               <div class="flex flex-col gap-2">

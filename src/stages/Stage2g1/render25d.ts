@@ -20,6 +20,18 @@ interface PortalClip {
   rightX: number;
 }
 
+export interface Stage2g1Animation {
+  delay: number;
+  isActive: (runId: number) => boolean;
+  mode: 'auto' | 'step';
+  runId: number;
+  waitForNextStep: () => Promise<void>;
+}
+
+type Stage2g1Settings = Settings & {
+  animation?: Stage2g1Animation;
+};
+
 function isPortal(seg: Seg): boolean {
   return Boolean(seg.isTwoSide && seg.backSector && seg.backSector !== seg.frontSector);
 }
@@ -110,9 +122,14 @@ async function renderSectorWithPortal(
   ctx: CanvasRenderingContext2D,
   camera: Camera,
   sector: Sector,
+  animation: Stage2g1Animation,
   visitedSectors: Set<number> = new Set(),
   clip: PortalClip | null = null
 ) {
+  if (!animation.isActive(animation.runId)) {
+    return;
+  }
+
   if (visitedSectors.has(sector.id!)) {
     return;
   }
@@ -195,7 +212,15 @@ async function renderSectorWithPortal(
     drawPolygon(ctx, points, wall.color);
   }
 
-  await wait(1_000);
+  if (animation.mode === 'step') {
+    await animation.waitForNextStep();
+  } else {
+    await wait(animation.delay);
+  }
+
+  if (!animation.isActive(animation.runId)) {
+    return;
+  }
 
   portals.sort((a, b) => b.projection.distance - a.projection.distance);
 
@@ -205,10 +230,11 @@ async function renderSectorWithPortal(
       rightX: Math.min(clip?.rightX ?? Infinity, portal.clipRight)
     };
     
-    renderSectorWithPortal(
+    await renderSectorWithPortal(
       ctx, 
       camera, 
       portal.backSector, 
+      animation,
       new Set(visitedSectors),
       newClip
     );
@@ -233,8 +259,15 @@ export default async function render25d(
   settings: Settings,
 ) {
   const camera = settings.camera;
+  const animation = (settings as Stage2g1Settings).animation ?? {
+    delay: 1_000,
+    isActive: () => true,
+    mode: 'auto',
+    runId: 0,
+    waitForNextStep: () => Promise.resolve(),
+  };
 
   const currentSector = findCameraSector(settings);
 
-  await renderSectorWithPortal(ctx, camera, currentSector, new Set(), null);
+  await renderSectorWithPortal(ctx, camera, currentSector, animation, new Set(), null);
 }

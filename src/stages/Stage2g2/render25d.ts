@@ -20,6 +20,28 @@ interface PortalClip {
   rightX: number;
 }
 
+export interface Stage2g2Animation {
+  delay: number;
+  isActive: (runId: number) => boolean;
+  mode: 'auto' | 'step';
+  runId: number;
+  waitForNextStep: () => Promise<void>;
+}
+
+type Stage2g2Settings = Settings & {
+  animation?: Stage2g2Animation;
+};
+
+async function waitForAnimation(animation: Stage2g2Animation) {
+  if (animation.mode === 'step') {
+    await animation.waitForNextStep();
+  } else {
+    await wait(animation.delay);
+  }
+
+  return animation.isActive(animation.runId);
+}
+
 function isPortal(seg: Seg): boolean {
   return Boolean(seg.isTwoSide && seg.backSector && seg.backSector !== seg.frontSector);
 }
@@ -110,9 +132,14 @@ async function renderSectorWithPortal(
   ctx: CanvasRenderingContext2D,
   camera: Camera,
   sector: Sector,
+  animation: Stage2g2Animation,
   visitedSectors: Set<number> = new Set(),
   clip: PortalClip | null = null
 ) {
+  if (!animation.isActive(animation.runId)) {
+    return;
+  }
+
   if (visitedSectors.has(sector.id!)) {
     return;
   }
@@ -183,22 +210,33 @@ async function renderSectorWithPortal(
   ceilPolygons.sort((a, b) => b.distance - a.distance);
   
   for (const poly of ceilPolygons) {
-    await wait(1_000);
+    if (!(await waitForAnimation(animation))) {
+      return;
+    }
+
     drawPolygon(ctx, poly.points, poly.color);
   }
   
   for (const poly of floorPolygons) {
-    await wait(1_000);
+    if (!(await waitForAnimation(animation))) {
+      return;
+    }
+
     drawPolygon(ctx, poly.points, poly.color);
   }
   
   for (const wall of walls) {
-    await wait(1_000);
+    if (!(await waitForAnimation(animation))) {
+      return;
+    }
+
     const points = projectionToPoints(wall.projection);
     drawPolygon(ctx, points, wall.color);
   }
 
-  await wait(1_000);
+  if (!(await waitForAnimation(animation))) {
+    return;
+  }
 
   portals.sort((a, b) => b.projection.distance - a.projection.distance);
 
@@ -208,10 +246,11 @@ async function renderSectorWithPortal(
       rightX: Math.min(clip?.rightX ?? Infinity, portal.clipRight)
     };
     
-    renderSectorWithPortal(
+    await renderSectorWithPortal(
       ctx, 
       camera, 
       portal.backSector, 
+      animation,
       new Set(visitedSectors),
       newClip
     );
@@ -236,8 +275,15 @@ export default async function render25d(
   settings: Settings,
 ) {
   const camera = settings.camera;
+  const animation = (settings as Stage2g2Settings).animation ?? {
+    delay: 1_000,
+    isActive: () => true,
+    mode: 'auto',
+    runId: 0,
+    waitForNextStep: () => Promise.resolve(),
+  };
 
   const currentSector = findCameraSector(settings);
 
-  await renderSectorWithPortal(ctx, camera, currentSector, new Set(), null);
+  await renderSectorWithPortal(ctx, camera, currentSector, animation, new Set(), null);
 }
