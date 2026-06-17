@@ -1,4 +1,4 @@
-const CACHE_NAME = '25d-renderer-network-first-v2';
+const CACHE_NAME = '25d-renderer-network-first-v3';
 const OFFLINE_URL = new URL('offline.html', self.registration.scope).toString();
 
 self.addEventListener('install', (event) => {
@@ -41,24 +41,24 @@ async function networkFirst(request) {
   try {
     const response = await fetch(request);
 
-    if (response.ok) {
+    if (response.ok && !isNavigationRequest) {
       await cache.put(request, response.clone());
     }
 
     return response;
   } catch (error) {
-    const cachedResponse = await cache.match(request);
-
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-
     if (isNavigationRequest) {
       const offlineResponse = await cache.match(OFFLINE_URL);
 
       if (offlineResponse) {
         return offlineResponse;
       }
+    }
+
+    const cachedResponse = await cache.match(request);
+
+    if (cachedResponse) {
+      return cachedResponse;
     }
 
     throw error;

@@ -1,21 +1,26 @@
 ---
 import PageLayout from '@app/layouts/PageLayout.astro';
-import Stage from '@app/pages/stage/_islands/Stage2k';
+import Stage2h1 from '@app/pages/stage/_islands/Stage2h1';
+import Stage2h2 from '@app/pages/stage/_islands/Stage2h2';
 import type { PageMetadata } from '@app/config/pages';
 import { PROJECT_REPO_URL } from '@app/config/repo';
 
 export const metadata: PageMetadata = {
-  title: 'Высота камеры',
+  title: 'Порталы 2D: прямоугольник',
   groupTitle: 'Stage 2: Отрисовка секторов',
 };
 ---
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <Stage client:load />
+    <Stage2h1 part={0} client:load />
+    <p class="py-2 text">
+      TODO
+    </p>
+    <Stage2h2 part={0} client:load />
     <p class="my-2">
       <a
-        href={`${PROJECT_REPO_URL}/pages/stage/_islands/Stage2k.tsx`}
+        href={`${PROJECT_REPO_URL}/stages/Stage2g/render25d.ts`}
         target="_blank"
         rel="noopener noreferrer"
         class="inline-flex items-center gap-1 text-blue-600 transition-colors hover:text-blue-800 hover:underline"

@@ -24,6 +24,8 @@ export interface Stage2g1Animation {
   delay: number;
   isActive: (runId: number) => boolean;
   mode: 'auto' | 'step';
+  onComplete?: () => void;
+  onStepStart?: () => void;
   runId: number;
   waitForNextStep: () => Promise<void>;
 }
@@ -31,6 +33,17 @@ export interface Stage2g1Animation {
 type Stage2g1Settings = Settings & {
   animation?: Stage2g1Animation;
 };
+
+async function waitForAnimation(animation: Stage2g1Animation) {
+  if (animation.mode === 'step') {
+    await animation.waitForNextStep();
+  } else {
+    animation.onStepStart?.();
+    await wait(animation.delay);
+  }
+
+  return animation.isActive(animation.runId);
+}
 
 function isPortal(seg: Seg): boolean {
   return Boolean(seg.isTwoSide && seg.backSector && seg.backSector !== seg.frontSector);
@@ -133,6 +146,11 @@ async function renderSectorWithPortal(
   if (visitedSectors.has(sector.id!)) {
     return;
   }
+
+  if (!(await waitForAnimation(animation))) {
+    return;
+  }
+
   visitedSectors.add(sector.id!);
 
   const walls: Wall[] = [];
@@ -212,16 +230,6 @@ async function renderSectorWithPortal(
     drawPolygon(ctx, points, wall.color);
   }
 
-  if (animation.mode === 'step') {
-    await animation.waitForNextStep();
-  } else {
-    await wait(animation.delay);
-  }
-
-  if (!animation.isActive(animation.runId)) {
-    return;
-  }
-
   portals.sort((a, b) => b.projection.distance - a.projection.distance);
 
   for (const portal of portals) {
@@ -270,4 +278,8 @@ export default async function render25d(
   const currentSector = findCameraSector(settings);
 
   await renderSectorWithPortal(ctx, camera, currentSector, animation, new Set(), null);
+
+  if (animation.isActive(animation.runId)) {
+    animation.onComplete?.();
+  }
 }

@@ -68,7 +68,10 @@
       <p>
         Страница недоступна без сети и еще не сохранена в кэше. Проверьте подключение и попробуйте снова.
       </p>
-      <button type="button" onclick="window.location.reload()">Повторить</button>
+      <div>
+        <button type="button" style="margin-left: 5px; margin-right: 5px;" onclick="window.history.back()">Вернуться</button>
+        <button type="button" style="margin-left: 5px; margin-right: 5px;" onclick="window.location.reload()">Повторить</button>
+      </div>
     </main>
   </body>
 </html>

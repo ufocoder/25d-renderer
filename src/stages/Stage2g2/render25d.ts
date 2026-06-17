@@ -24,6 +24,8 @@ export interface Stage2g2Animation {
   delay: number;
   isActive: (runId: number) => boolean;
   mode: 'auto' | 'step';
+  onComplete?: () => void;
+  onStepStart?: () => void;
   runId: number;
   waitForNextStep: () => Promise<void>;
 }
@@ -36,6 +38,7 @@ async function waitForAnimation(animation: Stage2g2Animation) {
   if (animation.mode === 'step') {
     await animation.waitForNextStep();
   } else {
+    animation.onStepStart?.();
     await wait(animation.delay);
   }
 
@@ -234,10 +237,6 @@ async function renderSectorWithPortal(
     drawPolygon(ctx, points, wall.color);
   }
 
-  if (!(await waitForAnimation(animation))) {
-    return;
-  }
-
   portals.sort((a, b) => b.projection.distance - a.projection.distance);
 
   for (const portal of portals) {
@@ -286,4 +285,8 @@ export default async function render25d(
   const currentSector = findCameraSector(settings);
 
   await renderSectorWithPortal(ctx, camera, currentSector, animation, new Set(), null);
+
+  if (animation.isActive(animation.runId)) {
+    animation.onComplete?.();
+  }
 }

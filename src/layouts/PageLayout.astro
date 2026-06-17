@@ -82,6 +82,7 @@ const enableServiceWorker = import.meta.env.PROD;
         window.addEventListener('load', () => {
           navigator.serviceWorker.register(serviceWorkerUrl, {
             scope: serviceWorkerScope,
+            updateViaCache: 'none',
           });
         });
       }

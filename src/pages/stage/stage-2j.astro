@@ -2,6 +2,7 @@
 import PageLayout from '@app/layouts/PageLayout.astro';
 import Stage from '@app/pages/stage/_islands/Stage2j';
 import type { PageMetadata } from '@app/config/pages';
+import { PROJECT_REPO_URL } from '@app/config/repo';
 
 export const metadata: PageMetadata = {
   title: 'Порталы 2D: многоугольник',
@@ -15,5 +16,15 @@ export const metadata: PageMetadata = {
       Трапециевидный клиппинг несовершен, необходим многоугольник. Используем алгоритм <a href="https://en.wikipedia.org/wiki/Sutherland%E2%80%93Hodgman_algorithm" class="link underline" target="_blank">Сазерленда—Ходгмана</a> (1974?):
     </p>
     <Stage part={0} client:load />
+    <p class="my-2">
+      <a
+        href={`${PROJECT_REPO_URL}/stages/Stage2j/render25d.ts`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-1 text-blue-600 transition-colors hover:text-blue-800 hover:underline"
+      >
+        Реализация шага на github
+      </a>
+    </p>
   </section>
 </PageLayout>

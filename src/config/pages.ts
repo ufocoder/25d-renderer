@@ -4,7 +4,7 @@ export type PageMetadata = {
 };
 
 export type PageModule = {
-  metadata: PageMetadata;
+  metadata?: PageMetadata;
 };
 
 export type MenuLink = {
@@ -96,6 +96,9 @@ export function isPathActive(pathname: string, href: string) {
 
 export function getAllPages() {
   return Object.entries(pageModules)
+    .filter((entry): entry is [string, PageModule & { metadata: PageMetadata }] =>
+      Boolean(entry[1].metadata),
+    )
     .map(([path, page]) => ({
       href: pagePathToHref(path),
       label: page.metadata.title,

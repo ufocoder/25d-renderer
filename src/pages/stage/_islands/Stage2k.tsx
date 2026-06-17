@@ -27,41 +27,49 @@ const Stage: Component = () => {
   })
 
   return (
-          <div class="flex flex-col gap-4">
-            <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
-              <div class="flex flex-col gap-2">
-                <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
-                <div class="flex justify-center">
-                  <Canvas
-              settings={settings}
-              width={settings().camera.screen.width}
-              height={settings().camera.screen.height}
-              render={render25d}
-            />
-                </div>
-                <div class="flex flex-col justify-center items-center">
-                  <button class="w-100 bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 border border-blue-700 mb-1" onClick={() => startAnimation()}>
-                    play camera Z axis animation
-                  </button>
-                  <button class="w-100 bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 border border-blue-700" onClick={() => stopAnimation()}>
-                    stop camera Z axis animation
-                  </button>
-                </div>
-              </div>
-              <div class="flex flex-col gap-2">
-                <h2 class="flex justify-center text-2xl">2D Renderer</h2>
-                <div class="flex justify-center">
-                  <Map2d
-              withControls
-              width={400}
-              height={320}
-              settings={settings}
-              render={render2d}
-                        />
-                </div>
-              </div>
-            </div>
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col justify-center gap-6 md:grid md:grid-cols-2 md:gap-4 md:items-start justify-items">
+        <div class="flex flex-col gap-2">
+          <h2 class="flex justify-center text-2xl">2.5D Renderer</h2>
+          <div class="flex justify-center">
+            <Canvas
+        settings={settings}
+        width={settings().camera.screen.width}
+        height={settings().camera.screen.height}
+        render={render25d}
+      />
           </div>
+          <div class="flex flex-wrap justify-center gap-2">
+            <button
+              type="button"
+              class="border border-[#9eb3da] bg-[#dce6fa] px-4 py-2 text-sm font-medium text-[#1f2a44] transition-colors hover:bg-[#c8d8f5]"
+              onClick={() => startAnimation()}
+            >
+              play camera Z axis animation
+            </button>
+            <button
+              type="button"
+              class="border border-[#9eb3da] bg-[#dce6fa] px-4 py-2 text-sm font-medium text-[#1f2a44] transition-colors hover:bg-[#c8d8f5]"
+              onClick={() => stopAnimation()}
+            >
+              stop camera Z axis animation
+            </button>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <h2 class="flex justify-center text-2xl">2D Renderer</h2>
+          <div class="flex justify-center">
+            <Map2d
+        withControls
+        width={400}
+        height={320}
+        settings={settings}
+        render={render2d}
+                  />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

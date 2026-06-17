@@ -1,5 +1,6 @@
 import Canvas from "@app/components/Canvas/CanvasBase";
 import Map2d from '@app/components/Map2d';
+import StepProgressButton from '@app/pages/stage/_components/StepProgressButton';
 import render2d from '@app/stages/Stage0b/render2d';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';
@@ -17,6 +18,16 @@ type Stage2g2Settings = Settings & {
 const Stage: Component<StageProps> = (props) => {
   let runId = 0;
   let nextStep: (() => void) | null = null;
+  const [isAutoPlaying, setIsAutoPlaying] = createSignal(false);
+  const [progressStep, setProgressStep] = createSignal(0);
+
+  const handleAnimationStep = () => {
+    setProgressStep((step) => step + 1);
+  };
+
+  const handleAnimationComplete = () => {
+    setIsAutoPlaying(false);
+  };
 
   const [settings, setSettings] = createSignal<Stage2g2Settings>({
     ...defaultSettings,
@@ -24,6 +35,8 @@ const Stage: Component<StageProps> = (props) => {
       delay: 1_000,
       isActive: (id) => id === runId,
       mode: 'step',
+      onComplete: handleAnimationComplete,
+      onStepStart: handleAnimationStep,
       runId,
       waitForNextStep: () =>
         new Promise<void>((resolve) => {
@@ -40,6 +53,8 @@ const Stage: Component<StageProps> = (props) => {
   const updateAnimation = (mode: Stage2g2Animation['mode']) => {
     resolveNextStep();
     runId += 1;
+    setIsAutoPlaying(mode === 'auto');
+    setProgressStep(0);
 
     setSettings((prevSettings) => ({
       ...prevSettings,
@@ -47,6 +62,8 @@ const Stage: Component<StageProps> = (props) => {
         delay: 1_000,
         isActive: (id) => id === runId,
         mode,
+        onComplete: handleAnimationComplete,
+        onStepStart: handleAnimationStep,
         runId,
         waitForNextStep: () =>
           new Promise<void>((resolve) => {
@@ -88,13 +105,14 @@ const Stage: Component<StageProps> = (props) => {
                   />
                 </div>
                 <div class="flex flex-wrap justify-center gap-2">
-                  <button
-                    type="button"
-                    class="border border-[#9eb3da] bg-[#dce6fa] px-4 py-2 text-sm font-medium text-[#1f2a44] transition-colors hover:bg-[#c8d8f5]"
+                  <StepProgressButton
+                    active={isAutoPlaying()}
+                    duration={settings().animation.delay}
                     onClick={playFullAnimation}
+                    step={progressStep()}
                   >
                     Запустить всю анимацию
-                  </button>
+                  </StepProgressButton>
                   <button
                     type="button"
                     class="border border-[#9eb3da] bg-[#dce6fa] px-4 py-2 text-sm font-medium text-[#1f2a44] transition-colors hover:bg-[#c8d8f5]"
