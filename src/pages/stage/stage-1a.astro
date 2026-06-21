@@ -82,7 +82,7 @@ const renderFormula = (latex: string) => katex.renderToString(latex, {
       <div set:html={renderFormula("W \\text{ — ширина экрана в пикселях}")} />
     </div>
     <p class="py-2 text">
-      Вычисляем угол между направлением камеры и вершиной на карте
+      Вычисляем угол между направлением камеры и вершиной на карте:
     </p>
     <div class="bg-gray-100 border border-gray-200 p-4 text my-2">
       <div set:html={renderFormula("\\theta_v = \\operatorname{arctan2}(\\Delta y, \\Delta x) \\cdot \\frac{180}{\\pi}")} />

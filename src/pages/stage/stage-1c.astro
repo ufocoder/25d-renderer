@@ -7,7 +7,7 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 
 export const metadata: PageMetadata = {
-  title: 'Проблема Fish eye',
+  title: 'Проблема fish eye',
   groupTitle: 'Stage 1: Отрисовка стен',
 };
 
@@ -47,7 +47,7 @@ const renderFormula = (latex: string) => katex.renderToString(latex, {
       <div set:html={renderFormula("d_{\\text{proj}} = d \\cdot \\cos(\\theta_{\\text{rel}})")} />
       <div set:html={renderFormula("h = \\frac{H_{\\text{wall}}}{d_{\\text{proj}}}")} />
     </div>
-    <p class="my-2">
+    <p class="py-2">
       <a href={`${PROJECT_REPO_URL}/stages/Stage1c/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
     </p>
   </section>
