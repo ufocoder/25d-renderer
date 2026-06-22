@@ -1,6 +1,5 @@
 ---
 import PageLayout from '@app/layouts/PageLayout.astro';
-import InDevelopmentGate from '@app/pages/_components/InDevelopmentGate.astro';
 import Stage from '@app/pages/stage/_islands/Stage3c';
 import type { PageMetadata } from '@app/config/pages';
 
@@ -11,8 +10,13 @@ export const metadata: PageMetadata = {
 ---
 
 <PageLayout>
-  <InDevelopmentGate />
   <section class="flex flex-col gap-4">
+    <p class="py-2 text">
+      Проверим построение BSP-дерева на нескольких типах геометрии: вложенных секторах, коридоре, пирамиде и ступенях. Слева в каждой строке показан исходный уровень, справа — его разбиение на выпуклые листья. Цвет отделяет один лист от другого, а номер показывает порядок обхода для текущего положения камеры.
+    </p>
     <Stage client:load />
+    <p class="py-2 text">
+      Примеры показывают, что одна и та же идея работает для разных конфигураций, но структура дерева и количество подсекторов зависят от геометрии уровня и выбранных разделителей.
+    </p>
   </section>
 </PageLayout>
