@@ -1,8 +1,8 @@
 ---
 import PageLayout from '@app/layouts/PageLayout.astro';
-import InDevelopmentGate from '@app/pages/_components/InDevelopmentGate.astro';
 import Stage from '@app/pages/stage/_islands/Stage3a';
 import type { PageMetadata } from '@app/config/pages';
+import { PROJECT_REPO_URL } from '@app/config/repo';
 
 export const metadata: PageMetadata = {
   title: 'Отрисовка внутреннего сектора',
@@ -11,18 +11,20 @@ export const metadata: PageMetadata = {
 ---
 
 <PageLayout>
-  <InDevelopmentGate />
   <section class="flex flex-col gap-4">
     <p class="py-2 text">
-      Отрисуем внутренний сектор с портальными сегментами
+      Портальный рендер из Stage 2 хорошо работает, когда сектора соединены последовательно. Но уровень может содержать сектор внутри другого сектора — например, колонну, платформу или яму посреди комнаты. С этим испытанием наш отрисовщик не справляется.
+    </p>
+    <p class="py-2 text">
+      Сначала представим границу внутреннего сектора портальными сегментами. Алгоритм пытается продолжить обход через них, однако вложенность и несколько возможных направлений обхода делают порядок отрисовки нестабильным:
     </p>
     <Stage part={0} client:load />
     <p class="py-2 text">
-      Отрисуем внутренний сектор с обычными сегментами
+      Теперь сделаем ту же внутреннюю границу обычной непрозрачной стеной:
     </p>
     <Stage part={1} client:load />
-    <p class="py-2 text">
-      Очевидно, текущий отрисовщик с этим не справляется
+    <p class="py-2">
+      <a href={`${PROJECT_REPO_URL}/stages/Stage3a/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
     </p>
   </section>
 </PageLayout>
