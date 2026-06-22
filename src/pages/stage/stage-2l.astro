@@ -1,0 +1,40 @@
+---
+import { codeToHtml } from 'shiki';
+import PageLayout from '@app/layouts/PageLayout.astro';
+import Stage from '@app/pages/stage/_islands/Stage2k';
+import type { PageMetadata } from '@app/config/pages';
+import { PROJECT_REPO_URL } from '@app/config/repo';
+import { withBase } from '@app/config/pages';
+
+const codeCamera = `
+  interface Camera {
+    // ..
+    z: number;
+  }
+
+`;
+
+const codeCameraHtml = await codeToHtml(codeCamera, { lang: 'ts', theme: 'github-dark' });
+
+export const metadata: PageMetadata = {
+  title: 'Текущие результаты',
+  groupTitle: 'Stage 2: Отрисовка секторов',
+};
+---
+
+<PageLayout>
+  <section class="flex flex-col gap-4">
+    <p class="py-2 text">
+      Мы рассматриваем уровень как набор секторов — набора замнкутых многоугольников заданной высоты. Сектора могут быть соединенны между собой через общую стену, которую мы обозвали как портал. Порталы используются в отрисовке соседних секторов и формируют область в виде многоугольников.
+    </p>
+    <p class="py-2 text">
+      На примерах уровней ранее мы реализовали поддержку только одного портала для одного текущего сектора. Чтобы расширить поддержку нескольких порталов для текущего сектора необходимо хранить массив областей для обрезки (клиппинга) и рекурсивно передавать его при отрисовке следующих секторов.
+    </p>
+    <p class="py-2 text">
+      Получившийся отрисовщик более продвинутый по сравнению с тем, что мы получили на <a class="link underline" href={withBase('/stage/stage-1g')}>Stage 1</a>, но у него также имеются свои ограничения и несовершенства: отрисовщику необходимо хранить множество многоугольников в памяти и вычислять их пересечение, мы по прежнему продолжаем сортировать стены, более того, мы ни разу не затронули вопросы производительности. 
+    </p>
+    <p class="py-2 text">
+      Помимо этих проблем у отрисовщика существует еще одна проблема, которая порождает интуицию о необходимости использования того самого алгоритма, благодаря которому прославились в прошлом разработчики DOOM —  <a class="link underline" href="https://en.wikipedia.org/wiki/Binary_space_partitioning">Binary Space Partition</a>. Об этом мы поговорим в следующем большом шаге.
+    </p>
+  </section>
+</PageLayout>

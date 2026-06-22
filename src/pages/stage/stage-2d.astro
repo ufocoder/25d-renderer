@@ -12,12 +12,15 @@ export const metadata: PageMetadata = {
 
 <PageLayout>
   <section class="flex flex-col gap-4">
-    <p>
-      Возьмем простой сектор, прямоугольник при виде сверху. 
-      Зная координаты вершин для конкретной стены, достроим вертикальные линии — получим пол и потолок. Смотрите, как это легко:
+    <p class="py-2 text">
+      Возьмем простой сектор — прямоугольник при виде сверху. 
+    </p>
+    <p class="py-2 text">
+      Зная координаты вершин для конкретной стены, достроим вертикальные линии и получим пол и потолок. Все просто:
+      нижняя граница стены продолжается до нижнего края экрана и образует фрагмент пола, а верхняя — до верхнего края и образует фрагмент потолка.
     </p>
     <Stage part={0} client:load />
-    <p class="my-2">
+    <p class="py-2">
       <a href={`${PROJECT_REPO_URL}/stages/Stage2d/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
     </p>
   </section>
