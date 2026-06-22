@@ -2,6 +2,7 @@
 import PageLayout from '@app/layouts/PageLayout.astro';
 import Stage from '@app/pages/stage/_islands/Stage3c';
 import type { PageMetadata } from '@app/config/pages';
+import { PROJECT_REPO_URL } from '@app/config/repo';
 
 export const metadata: PageMetadata = {
   title: 'Тест: варианты разбития',
@@ -17,6 +18,15 @@ export const metadata: PageMetadata = {
     <Stage client:load />
     <p class="py-2 text">
       Примеры показывают, что одна и та же идея работает для разных конфигураций, но структура дерева и количество подсекторов зависят от геометрии уровня и выбранных разделителей.
+    </p><p class="py-2">
+      <a
+        href={`${PROJECT_REPO_URL}/stages/Stage3b/settings`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center gap-1 text-blue-600 transition-colors hover:text-blue-800 hover:underline"
+      >
+        Настройки уровней на github
+      </a>
     </p>
   </section>
 </PageLayout>

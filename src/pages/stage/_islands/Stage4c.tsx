@@ -1,6 +1,6 @@
 import Canvas from "@app/components/Canvas/CanvasBase";
 import Map2d from "@app/components/Map2d";
-import { useBspTree } from '@app/stages/Stage3a/hooks/useBspTree';
+import { useBspTree } from '@app/stages/Stage3b/hooks/useBspTree';
 import { createRender25d } from '@app/stages/Stage4a//render25d';
 import type { Component } from 'solid-js';
 import { createSignal } from 'solid-js';

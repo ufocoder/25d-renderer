@@ -30,8 +30,8 @@ export function simplifyBSP(node: BSPNode): SimplifiedBSPNode {
   if (node.kind === 'leaf') {
     return {
       kind: 'leaf',
-      segCount: node.segs.length,
-      segs: node.segs.map(seg => ({
+      segCount: node.boundarySegs.length,
+      segs: node.boundarySegs.map(seg => ({
         start: { x: seg.start.x, y: seg.start.y },
         end: { x: seg.end.x, y: seg.end.y },
         isTwoSided: seg.isTwoSide,

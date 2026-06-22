@@ -6,8 +6,10 @@ import {
   getPointSide,
   isConvexPolygon,
   lineIntersectionWithRay,
+  orderPolygonVertices,
   resetSegIdCounter,
-  splitSegment
+  splitSegment,
+  uniquePoints,
 } from "./geometry";
 
 import type { BSPLeaf, BSPNode } from "./typings";
@@ -40,10 +42,27 @@ interface PartitionSegments {
   newSegments: Seg[];
 }
 
+function getGeometryKey(seg: Seg): string {
+  const scale = 1_000;
+  const start = `${Math.round(seg.start.x * scale)}/${Math.round(seg.start.y * scale)}`;
+  const end = `${Math.round(seg.end.x * scale)}/${Math.round(seg.end.y * scale)}`;
+  return start < end ? `${start}:${end}` : `${end}:${start}`;
+}
+
+function uniqueGeometry(segs: Seg[]): Seg[] {
+  const seen = new Set<string>();
+
+  return segs.filter((seg) => {
+    const geometryKey = getGeometryKey(seg);
+    if (seen.has(geometryKey)) return false;
+    seen.add(geometryKey);
+    return true;
+  });
+}
+
 function partitionByInfiniteLine(
   segs: Seg[],
   splitter: Seg,
-  allSegs: Map<number, Seg>
 ): PartitionSegments {
   const frontSegments: Seg[] = [];
   const backSegments: Seg[] = [];
@@ -93,17 +112,6 @@ function partitionByInfiniteLine(
     
     const [segA, segB] = splitSegment(seg, intersection);
     
-    segA.frontSector = seg.frontSector;
-    segA.backSector = seg.backSector;
-    segA.isTwoSide = seg.isTwoSide;
-    segB.frontSector = seg.frontSector;
-    segB.backSector = seg.backSector;
-    segB.isTwoSide = seg.isTwoSide;
-    
-    allSegs.set(segA.id!, segA);
-    allSegs.set(segB.id!, segB);
-    allSegs.delete(seg.id!);
-
     newSegments.push(segA, segB);
     
     const midA = {
@@ -140,10 +148,11 @@ function partitionByInfiniteLine(
 }
 
 function canCreateLeaf(segs: Seg[], minSegments: number = 3): boolean {
-  if (segs.length < minSegments) return false;
-  if (!isConnectedPolygon(segs)) return false;
+  const boundarySegs = uniqueGeometry(segs);
+  if (boundarySegs.length < minSegments) return false;
+  if (!isConnectedPolygon(boundarySegs)) return false;
   
-  return isConvexPolygon(segs);
+  return isConvexPolygon(boundarySegs);
 }
 
 function isConnectedPolygon(segs: Seg[]): boolean {
@@ -193,6 +202,188 @@ function isConnectedPolygon(segs: Seg[]): boolean {
   return visited.size === vertexToSegs.size;
 }
 
+function closeBoundary(segs: Seg[], sector: Sector | null): Seg[] {
+  const boundarySegs = uniqueGeometry(segs);
+  const scale = 1_000;
+  const key = (point: Vertex) =>
+    `${Math.round(point.x * scale)}/${Math.round(point.y * scale)}`;
+
+  const maxIterations = boundarySegs.length * 2 + 10;
+
+  for (let iteration = 0; iteration < maxIterations; iteration += 1) {
+    const pointByKey = new Map<string, Vertex>();
+    const adjacency = new Map<string, Set<string>>();
+
+    for (const seg of boundarySegs) {
+      const startKey = key(seg.start);
+      const endKey = key(seg.end);
+      pointByKey.set(startKey, seg.start);
+      pointByKey.set(endKey, seg.end);
+      if (!adjacency.has(startKey)) adjacency.set(startKey, new Set());
+      if (!adjacency.has(endKey)) adjacency.set(endKey, new Set());
+      adjacency.get(startKey)!.add(endKey);
+      adjacency.get(endKey)!.add(startKey);
+    }
+
+    const componentByKey = new Map<string, number>();
+    let componentCount = 0;
+
+    for (const startKey of adjacency.keys()) {
+      if (componentByKey.has(startKey)) continue;
+      const stack = [startKey];
+
+      while (stack.length > 0) {
+        const currentKey = stack.pop()!;
+        if (componentByKey.has(currentKey)) continue;
+        componentByKey.set(currentKey, componentCount);
+        for (const nextKey of adjacency.get(currentKey) ?? []) {
+          stack.push(nextKey);
+        }
+      }
+
+      componentCount += 1;
+    }
+
+    const openPoints = [...adjacency.entries()]
+      .filter(([, neighbors]) => neighbors.size % 2 === 1)
+      .map(([pointKey]) => ({
+        component: componentByKey.get(pointKey)!,
+        point: pointByKey.get(pointKey)!,
+      }));
+
+    if (openPoints.length < 2) {
+      return boundarySegs;
+    }
+
+    if (componentCount === 2 && openPoints.length === 4) {
+      const firstComponent = openPoints[0].component;
+      const firstPoints = openPoints.filter(
+        ({ component }) => component === firstComponent,
+      );
+      const secondPoints = openPoints.filter(
+        ({ component }) => component !== firstComponent,
+      );
+
+      if (firstPoints.length === 2 && secondPoints.length === 2) {
+        const pairings = [
+          [
+            [firstPoints[0].point, secondPoints[0].point],
+            [firstPoints[1].point, secondPoints[1].point],
+          ],
+          [
+            [firstPoints[0].point, secondPoints[1].point],
+            [firstPoints[1].point, secondPoints[0].point],
+          ],
+        ] as const;
+        let bestPairing = pairings[0];
+        let bestArea = -Infinity;
+
+        for (const pairing of pairings) {
+          const candidateSegs = [
+            ...boundarySegs,
+            ...pairing.map(([start, end]) => ({
+              id: generateSegId(),
+              start,
+              end,
+              frontSector: sector ?? undefined,
+              backSector: sector ?? undefined,
+              isPartition: true,
+              isTwoSide: true,
+            })),
+          ];
+          const vertices = orderPolygonVertices(candidateSegs);
+          const area = Math.abs(vertices.reduce((sum, point, index) => {
+            const next = vertices[(index + 1) % vertices.length];
+            return sum + point.x * next.y - next.x * point.y;
+          }, 0) / 2);
+
+          if (vertices.length === candidateSegs.length && area > bestArea) {
+            bestArea = area;
+            bestPairing = pairing;
+          }
+        }
+
+        let added = false;
+
+        for (const [start, end] of bestPairing) {
+          const partitionSeg: Seg = {
+            id: generateSegId(),
+            start,
+            end,
+            frontSector: sector ?? undefined,
+            backSector: sector ?? undefined,
+            isPartition: true,
+            isTwoSide: true,
+          };
+
+          if (boundarySegs.some(
+            (seg) => getGeometryKey(seg) === getGeometryKey(partitionSeg),
+          )) {
+            continue;
+          }
+
+          boundarySegs.push({
+            ...partitionSeg,
+          });
+          added = true;
+        }
+
+        if (!added) return boundarySegs;
+        continue;
+      }
+    }
+
+    let bestPair: [number, number] | null = null;
+    let bestDistance = Infinity;
+
+    for (let left = 0; left < openPoints.length; left += 1) {
+      for (let right = left + 1; right < openPoints.length; right += 1) {
+        const sameComponent =
+          openPoints[left].component === openPoints[right].component;
+
+        if (componentCount > 1 && sameComponent) {
+          continue;
+        }
+
+        const distance = Math.hypot(
+          openPoints[right].point.x - openPoints[left].point.x,
+          openPoints[right].point.y - openPoints[left].point.y,
+        );
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestPair = [left, right];
+        }
+      }
+    }
+
+    if (!bestPair || bestDistance < 0.001) {
+      return boundarySegs;
+    }
+
+    const [left, right] = bestPair;
+    const partitionSeg: Seg = {
+      id: generateSegId(),
+      start: openPoints[left].point,
+      end: openPoints[right].point,
+      frontSector: sector ?? undefined,
+      backSector: sector ?? undefined,
+      isPartition: true,
+      isTwoSide: true,
+    };
+
+    if (boundarySegs.some(
+      (seg) => getGeometryKey(seg) === getGeometryKey(partitionSeg),
+    )) {
+      return boundarySegs;
+    }
+
+    boundarySegs.push(partitionSeg);
+  }
+
+  return boundarySegs;
+}
+
 function getSectorForLeaf(segs: Seg[]): Sector | null {
   if (segs.length === 0) return null;
 
@@ -211,8 +402,8 @@ function getSectorForLeaf(segs: Seg[]): Sector | null {
 }
 
 function createLeaf(segs: Seg[], sector?: Sector | null): BSPLeaf {
-  const uniqueSegs = segs.filter((seg, index, self) => 
-    index === self.findIndex(s => s.id === seg.id)
+  const uniqueSegs = segs.filter((seg, index, self) =>
+    !seg.isPartition && index === self.findIndex((item) => item.id === seg.id)
   );
 
   let leafSector: Sector | null = sector || null;
@@ -232,17 +423,24 @@ function createLeaf(segs: Seg[], sector?: Sector | null): BSPLeaf {
       segs: []
     } as Sector;
   }
+
+  const boundarySegs = closeBoundary(segs, leafSector);
   
   return {
     kind: 'leaf',
     segs: uniqueSegs,
-    bounds: computeBounds(uniqueSegs)
+    boundarySegs,
+    bounds: computeBounds(boundarySegs)
   };
 }
 
 function getAvailableSplitters(segs: Seg[], usedSplitterIds: Set<number>): Seg[] {
-  const twoSideSplitters = segs.filter(s => s.isTwoSide === true && !usedSplitterIds.has(s.id!));
-  const oneSideSplitters = segs.filter(s => s.isTwoSide === false && !usedSplitterIds.has(s.id!));
+  const twoSideSplitters = segs.filter(s =>
+    !s.isPartition && s.isTwoSide === true && !usedSplitterIds.has(s.id!)
+  );
+  const oneSideSplitters = segs.filter(s =>
+    !s.isPartition && s.isTwoSide === false && !usedSplitterIds.has(s.id!)
+  );
   
   return [...twoSideSplitters, ...oneSideSplitters];
 }
@@ -263,7 +461,6 @@ function evaluateSplitter(frontCount: number, backCount: number, isPortal: boole
 function selectBestSplitter(
   segs: Seg[],
   availableSplitters: Seg[],
-  allSegs: Map<number, Seg>
 ): { splitter: Seg | null; front: Seg[]; back: Seg[]; onLine: Seg[]; newSegments: Seg[] } {
   let bestSplitter: Seg | null = null;
   let bestFront: Seg[] = [];
@@ -276,7 +473,6 @@ function selectBestSplitter(
     const { frontSegments, backSegments, onLineSegments, newSegments } = partitionByInfiniteLine(
       segs,
       splitter,
-      allSegs
     );
     
     const score = evaluateSplitter(frontSegments.length, backSegments.length, isPortal(splitter));
@@ -302,9 +498,130 @@ function selectBestSplitter(
   };
 }
 
+function closeOpenChains(
+  segs: Seg[],
+  splitter: Seg,
+  sector: Sector | null,
+): Seg[] {
+  const boundarySegs = uniqueGeometry(segs);
+  const scale = 1_000;
+  const pointByKey = new Map<string, Vertex>();
+  const degreeByKey = new Map<string, number>();
+  const key = (point: Vertex) =>
+    `${Math.round(point.x * scale)}/${Math.round(point.y * scale)}`;
+
+  for (const seg of boundarySegs) {
+    for (const point of [seg.start, seg.end]) {
+      const pointKey = key(point);
+      pointByKey.set(pointKey, point);
+      degreeByKey.set(pointKey, (degreeByKey.get(pointKey) ?? 0) + 1);
+    }
+  }
+
+  const dx = splitter.end.x - splitter.start.x;
+  const dy = splitter.end.y - splitter.start.y;
+  const openPoints = [...degreeByKey.entries()]
+    .filter(([pointKey, degree]) => {
+      const point = pointByKey.get(pointKey)!;
+      return degree % 2 === 1 && getPointSide(splitter, point) === 0;
+    })
+    .map(([pointKey]) => pointByKey.get(pointKey)!)
+    .sort((a, b) =>
+      (a.x - splitter.start.x) * dx + (a.y - splitter.start.y) * dy -
+      ((b.x - splitter.start.x) * dx + (b.y - splitter.start.y) * dy),
+    );
+
+  const partitionSegs: Seg[] = [];
+
+  for (let index = 0; index + 1 < openPoints.length; index += 2) {
+    const start = openPoints[index];
+    const end = openPoints[index + 1];
+
+    if (Math.hypot(end.x - start.x, end.y - start.y) < 0.001) {
+      continue;
+    }
+
+    partitionSegs.push({
+      id: generateSegId(),
+      start,
+      end,
+      frontSector: sector ?? splitter.frontSector,
+      backSector: sector ?? splitter.backSector,
+      isPartition: true,
+      isTwoSide: true,
+    });
+  }
+
+  return [...boundarySegs, ...partitionSegs];
+}
+
+function clipPolygonByLine(
+  polygon: Vertex[],
+  splitter: Seg,
+  keepFront: boolean,
+): Vertex[] {
+  const result: Vertex[] = [];
+  const infiniteLine = extendToInfiniteLine(splitter);
+
+  for (let index = 0; index < polygon.length; index += 1) {
+    const current = polygon[index];
+    const next = polygon[(index + 1) % polygon.length];
+    const currentSide = getPointSide(splitter, current);
+    const nextSide = getPointSide(splitter, next);
+    const currentInside = keepFront ? currentSide >= 0 : currentSide <= 0;
+    const nextInside = keepFront ? nextSide >= 0 : nextSide <= 0;
+
+    if (currentInside) {
+      result.push(current);
+    }
+
+    if (currentInside !== nextInside) {
+      const intersection = lineIntersectionWithRay(
+        infiniteLine,
+        { start: current, end: next },
+        true,
+      );
+
+      if (intersection) {
+        result.push({ x: intersection.x, y: intersection.y });
+      }
+    }
+  }
+
+  return uniquePoints(result);
+}
+
+function polygonToBoundarySegs(polygon: Vertex[]): Seg[] {
+  return polygon.map((start, index) => ({
+    id: generateSegId(),
+    start,
+    end: polygon[(index + 1) % polygon.length],
+    isPartition: true,
+    isTwoSide: true,
+  }));
+}
+
+function assignLeafBoundaries(node: BSPNode, polygon: Vertex[]): void {
+  if (node.kind === 'leaf') {
+    if (polygon.length >= 3) {
+      node.boundarySegs = polygonToBoundarySegs(polygon);
+      node.bounds = computeBounds(node.boundarySegs);
+    }
+    return;
+  }
+
+  assignLeafBoundaries(
+    node.front,
+    clipPolygonByLine(polygon, node.splitter, true),
+  );
+  assignLeafBoundaries(
+    node.back,
+    clipPolygonByLine(polygon, node.splitter, false),
+  );
+}
+
 function buildBSPTreeRecursive(
   segs: Seg[],
-  allSegs: Map<number, Seg>,
   usedSplitterIds: Set<number>,
   currentSector: Sector | null,
   depth: number,
@@ -338,7 +655,6 @@ function buildBSPTreeRecursive(
   const { splitter, front, back, onLine, newSegments } = selectBestSplitter(
     segs,
     currentSplitters,
-    allSegs
   );
   
   if (!splitter) {
@@ -357,8 +673,14 @@ function buildBSPTreeRecursive(
 
   const invertedOnLine = onLine.map(seg => invertSegment(seg));
 
-  const frontSegs = [...front, ...onLine];
-  const backSegs = [...back, ...invertedOnLine];
+  const frontSector = splitter.frontSector || currentSector;
+  const backSector = splitter.backSector || currentSector;
+  const frontSegs = closeOpenChains([...front, ...onLine], splitter, frontSector);
+  const backSegs = closeOpenChains(
+    [...back, ...invertedOnLine],
+    splitter,
+    backSector,
+  );
 
   if (onSplitDebug) {
     onSplitDebug({ frontSegs, backSegs });
@@ -367,12 +689,8 @@ function buildBSPTreeRecursive(
   const newUsedSplitterIds = new Set(usedSplitterIds);
   newUsedSplitterIds.add(splitter.id!);
   
-  const frontSector = splitter.frontSector || currentSector;
-  const backSector = splitter.backSector || currentSector;
-  
   const leftResult = buildBSPTreeRecursive(
     frontSegs,
-    allSegs,
     newUsedSplitterIds,
     frontSector,
     depth + 1,
@@ -387,7 +705,6 @@ function buildBSPTreeRecursive(
   
   const rightResult = buildBSPTreeRecursive(
     backSegs,
-    allSegs,
     newUsedSplitterIds,
     backSector,
     depth + 1,
@@ -431,17 +748,10 @@ export function buildBSPTree(
     id: generateSegId()
   }));
   
-  const allSegs = new Map<number, Seg>();
-
-  for (const seg of segsWithId) {
-    allSegs.set(seg.id, seg);
-  }
-  
   const usedSplitterIds = new Set<number>();
   
   const result = buildBSPTreeRecursive(
     segsWithId,
-    allSegs,
     usedSplitterIds,
     null,
     0,
@@ -452,6 +762,12 @@ export function buildBSPTree(
   
   if (!result.success || !result.node) {
     return createLeaf(segsWithId);
+  }
+
+  const outerSegs = segsWithId.filter((seg) => !seg.isTwoSide);
+
+  if (isConnectedPolygon(outerSegs) && isConvexPolygon(outerSegs)) {
+    assignLeafBoundaries(result.node, orderPolygonVertices(outerSegs));
   }
   
   return result.node;

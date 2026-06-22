@@ -3,6 +3,7 @@ import PageLayout from '@app/layouts/PageLayout.astro';
 import Stage from '@app/pages/stage/_islands/Stage3a';
 import type { PageMetadata } from '@app/config/pages';
 import { PROJECT_REPO_URL } from '@app/config/repo';
+import { withBase } from '@app/config/pages';
 
 export const metadata: PageMetadata = {
   title: 'Отрисовка внутреннего сектора',
@@ -13,16 +14,19 @@ export const metadata: PageMetadata = {
 <PageLayout>
   <section class="flex flex-col gap-4">
     <p class="py-2 text">
-      Портальный рендер из Stage 2 хорошо работает, когда сектора соединены последовательно. Но уровень может содержать сектор внутри другого сектора — например, колонну, платформу или яму посреди комнаты. С этим испытанием наш отрисовщик не справляется.
+      Получившийся портальный рендер из <a class="link underline" href={withBase('/stage/stage-2a')}>Stage 2</a> хорошо работает, когда сектора соединены последовательно. Но уровень может содержать сектор внутри другого сектора — например, колонну, платформу или яму посреди комнаты. С этим испытанием наш новый отрисовщик не справляется.
     </p>
     <p class="py-2 text">
       Сначала представим границу внутреннего сектора портальными сегментами. Алгоритм пытается продолжить обход через них, однако вложенность и несколько возможных направлений обхода делают порядок отрисовки нестабильным:
     </p>
     <Stage part={0} client:load />
     <p class="py-2 text">
-      Теперь сделаем ту же внутреннюю границу обычной непрозрачной стеной:
+      Теперь сделаем ту же границу между секторами, но в виде обычной непрозрачной стеной:
     </p>
     <Stage part={1} client:load />
+    <p class="py-2 text">
+      Текущий отрисовщик <span class="font-bold">не умеет проецировать внутрение сектора</span>.
+    </p>
     <p class="py-2">
       <a href={`${PROJECT_REPO_URL}/stages/Stage3a/render25d.ts`} target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors" >Реализация шага на github</a>
     </p>

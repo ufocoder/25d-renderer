@@ -1,7 +1,7 @@
 
 import { Angle } from "@app/lib/Angle";
 import { drawAngleLine, drawPolygon } from "@app/lib/canvas";
-import { calculatePolygonCenter, sortPointsClockwise, uniquePoints } from "@app/stages/Stage3b/bsp/geometry";
+import { calculatePolygonCenter, orderPolygonVertices } from "@app/stages/Stage3b/bsp/geometry";
 import { traverseBSPTree } from "@app/stages/Stage3b/bsp/traverse";
 import type { BSPLeaf, BSPNode } from "@app/stages/Stage3b/bsp/typings";
 
@@ -45,12 +45,9 @@ function drawLeaf(
   scale: number = 1,
   index: number = 0
 ): void {
-  const points = sortPointsClockwise(uniquePoints(
-    leaf.segs
-      .map(seg => scaleLinedef(seg, scale))
-      .map(seg => [seg.start, seg.end])
-      .flat()
-    ));
+  const points = orderPolygonVertices(
+    leaf.boundarySegs.map((seg) => scaleLinedef(seg, scale)),
+  );
 
   const center = calculatePolygonCenter(points);
   const color = gerenateColor(index);

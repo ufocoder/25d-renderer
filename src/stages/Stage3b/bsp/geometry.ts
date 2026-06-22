@@ -70,21 +70,17 @@ export function segmentIntersection(a: Seg, b: Seg): { x: number; y: number } | 
 
 export function splitSegment(seg: Seg, point: { x: number; y: number }): [Seg, Seg] {
   const front: Seg = {
+    ...seg,
     id: generateSegId(),
     start: seg.start,
     end: point,
-    frontSector: seg.frontSector,
-    backSector: seg.backSector,
-    isTwoSide: seg.isTwoSide
   };
   
   const back: Seg = {
+    ...seg,
     id: generateSegId(),
     start: point,
     end: seg.end,
-    frontSector: seg.frontSector,
-    backSector: seg.backSector,
-    isTwoSide: seg.isTwoSide
   };
   
   return [front, back];
@@ -125,10 +121,59 @@ export function sortVerticesForConvexPolygon(segs: Seg[]): { x: number; y: numbe
   });
 }
 
+export function orderPolygonVertices(segs: Seg[]): Vertex[] {
+  if (segs.length === 0) return [];
+
+  const scale = 1_000;
+  const key = (point: Vertex) =>
+    `${Math.round(point.x * scale)}/${Math.round(point.y * scale)}`;
+  const pointByKey = new Map<string, Vertex>();
+  const neighborsByKey = new Map<string, string[]>();
+
+  for (const seg of segs) {
+    const startKey = key(seg.start);
+    const endKey = key(seg.end);
+    pointByKey.set(startKey, seg.start);
+    pointByKey.set(endKey, seg.end);
+    if (!neighborsByKey.has(startKey)) neighborsByKey.set(startKey, []);
+    if (!neighborsByKey.has(endKey)) neighborsByKey.set(endKey, []);
+    if (!neighborsByKey.get(startKey)!.includes(endKey)) {
+      neighborsByKey.get(startKey)!.push(endKey);
+    }
+    if (!neighborsByKey.get(endKey)!.includes(startKey)) {
+      neighborsByKey.get(endKey)!.push(startKey);
+    }
+  }
+
+  const startKey = [...pointByKey.keys()].sort((left, right) => {
+    const leftPoint = pointByKey.get(left)!;
+    const rightPoint = pointByKey.get(right)!;
+    return leftPoint.x - rightPoint.x || leftPoint.y - rightPoint.y;
+  })[0];
+  const vertices: Vertex[] = [];
+  let previousKey: string | null = null;
+  let currentKey = startKey;
+
+  do {
+    vertices.push(pointByKey.get(currentKey)!);
+    const neighbors = neighborsByKey.get(currentKey) ?? [];
+    const nextKey = neighbors.find((neighbor) => neighbor !== previousKey);
+
+    if (!nextKey) {
+      return vertices;
+    }
+
+    previousKey = currentKey;
+    currentKey = nextKey;
+  } while (currentKey !== startKey && vertices.length <= segs.length);
+
+  return vertices;
+}
+
 export function isConvexPolygon(segs: Seg[]): boolean {
   if (segs.length < 3) return true;
   
-  const vertices = sortVerticesForConvexPolygon(segs);
+  const vertices = orderPolygonVertices(segs);
 
   if (vertices.length < 3) return true;
   
@@ -147,7 +192,7 @@ export function isConvexPolygon(segs: Seg[]): boolean {
     const cross = dx1 * dy2 - dy1 * dx2;
     const sign = cross > 0 ? 1 : (cross < 0 ? -1 : 0);
     
-    if (i === 0) {
+    if (lastSign === 0) {
       lastSign = sign;
     } else if (sign !== 0 && lastSign !== 0 && sign !== lastSign) {
       return false;

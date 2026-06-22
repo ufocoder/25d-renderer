@@ -51,10 +51,22 @@ const code1Html = await codeToHtml(code1, { lang: 'ts', theme: 'github-dark' });
 <PageLayout>
   <InDevelopmentGate />
   <section class="flex flex-col gap-4">
+    <p class="py-2 text">
+      Одного диапазона по X достаточно для непрозрачных стен, но портал ограничен еще сверху и снизу. Добавим два массива размером с ширину экрана: <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">upperClip</code> и <code class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">lowerClip</code>.
+    </p>
+    <p class="py-2 text">
+      Для каждой экранной колонки массивы хранят верхнюю и нижнюю границы еще видимой области. Непрозрачная стена заполняет доступный интервал, а портал рисует пол и потолок вокруг проема и сужает окно для следующей геометрии.
+    </p>
     <Stage part={0} client:load />
+    <p class="py-2 text">
+      Такое поколоночное отсечение учитывает перспективный наклон границ портала и корректно работает с цепочкой секторов одинаковой высоты.
+    </p>
     <h2 class="text-2xl">
       Немного кода
     </h2>
+    <p class="py-2 text">
+      BSP-обход остается прежним, но обычные и портальные сегменты теперь обрабатываются разными функциями и используют общие массивы вертикального клиппинга.
+    </p>
     <div set:html={code1Html} />
   </section>
 </PageLayout>

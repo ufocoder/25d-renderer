@@ -8,6 +8,7 @@ export type BSPBranch = {
 export type BSPLeaf = {
   kind: 'leaf';
   segs: Seg[];
+  boundarySegs: Seg[];
   bounds: {
     minX: number;
     minY: number;

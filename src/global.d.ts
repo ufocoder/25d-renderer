@@ -26,6 +26,7 @@ interface Camera {
 interface Seg extends Linedef {
   id?: number;
   color?: string;
+  isPartition?: boolean;
   frontSector?: Sector;
   backSector?: Sector;
   isTwoSide?: boolean;
