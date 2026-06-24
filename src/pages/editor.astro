@@ -1,0 +1,18 @@
+---
+import PageLayout from '@app/layouts/PageLayout.astro';
+import Editor from '@app/pages/_islands/Editor';
+import type { PageMetadata } from '@app/config/pages';
+
+export const metadata: PageMetadata = {
+  title: 'Editor',
+};
+---
+
+<PageLayout>
+  <section class="flex flex-col gap-4">
+    <p class="py-2 text">
+      Редактор уровня вид сверху: создавайте линии, собирайте замкнутые контуры в секторы и отмечайте общие линии двух секторов как порталы. JSON справа обновляется сразу после изменения геометрии.
+    </p>
+    <Editor client:load />
+  </section>
+</PageLayout>
